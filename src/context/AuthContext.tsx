@@ -29,7 +29,6 @@ interface AuthContextType {
   isSupabaseConnected: boolean;
   loginWithSupabase: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signUpWithSupabase: (email: string, password: string) => Promise<{ success: boolean; error?: string; needConfirmation?: boolean }>;
-  loginWithHouseholdPin: (name: UserProfileName, pin: string) => { success: boolean; error?: string };
   loginAsDemo: (name: UserProfileName) => void;
   logout: () => Promise<void>;
   updateProfileName: (name: UserProfileName) => void;
@@ -294,15 +293,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithHouseholdPin = (name: UserProfileName, pin: string): { success: boolean; error?: string } => {
-    const trimmed = pin.trim();
-    if (trimmed === '1234' || trimmed === '083' || trimmed === '2026' || trimmed === '83') {
-      loginAsDemo(name);
-      return { success: true };
-    }
-    return { success: false, error: 'Incorrect passcode. Try 1234.' };
-  };
-
   const loginAsDemo = (name: UserProfileName) => {
     localStorage.setItem('household_demo_user', name);
     setCurrentUser(createProfileObject(name, `${name.toLowerCase()}@household.local`));
@@ -340,7 +330,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isSupabaseConnected,
         loginWithSupabase,
         signUpWithSupabase,
-        loginWithHouseholdPin,
         loginAsDemo,
         logout,
         updateProfileName
