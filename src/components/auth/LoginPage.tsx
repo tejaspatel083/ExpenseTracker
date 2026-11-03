@@ -48,13 +48,13 @@ export const LoginPage: React.FC = () => {
             <Shield className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-            Tejas & Hetvi
+            Household Ledger
             <span className="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
-              Private Household
+              Private
             </span>
           </h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-1">
-            Strictly Private • Tejas & Hetvi Only
+            Personal finance & wealth management
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export const LoginPage: React.FC = () => {
           {/* Card Header & Settings Button */}
           <div className="flex items-center justify-between mb-5 sm:mb-6">
             <div>
-              <h2 className="text-base sm:text-lg font-semibold text-white">Household Sign In</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-white">Sign In</h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Authentication required to access records.
               </p>
@@ -88,9 +88,9 @@ export const LoginPage: React.FC = () => {
               <div className="flex items-start gap-2">
                 <Database className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">Supabase Cloud not connected.</span>
+                  <span className="font-bold">Database not connected.</span>
                   <p className="text-[11px] text-amber-300/80 mt-0.5">
-                    Click settings to connect your private Supabase database.
+                    Click settings to connect your private database.
                   </p>
                 </div>
               </div>
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
             <div className="mb-4 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-xs text-emerald-300">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-semibold">Supabase Cloud Connected</span>
+                <span className="font-semibold">Cloud Database Connected</span>
               </div>
               <button
                 type="button"
@@ -142,7 +142,7 @@ export const LoginPage: React.FC = () => {
                   autoCapitalize="none"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tejas@... or hetvi@..."
+                  placeholder="Email address"
                   className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   autoComplete="email"
                 />
@@ -186,10 +186,10 @@ export const LoginPage: React.FC = () => {
 
         <div className="mt-5 text-center space-y-1">
           <p className="text-xs text-slate-400">
-            🔒 Private Encrypted Household Ledger
+            🔒 Private Encrypted Ledger
           </p>
           <p className="text-[11px] text-slate-500">
-            Public sign-ups disabled. Access restricted strictly to Tejas & Hetvi.
+            Public sign-ups disabled. Authorized accounts only.
           </p>
         </div>
       </div>
