@@ -4,20 +4,16 @@ import {
   Shield,
   Lock,
   Mail,
-  Users,
   ArrowRight,
-  Sparkles,
-  CheckCircle2,
   AlertCircle,
   Settings,
   Database,
-  ExternalLink
+  CheckCircle2
 } from 'lucide-react';
-import { UserProfileName } from '../../types';
 import { SimpleSettingsModal } from '../modals/SimpleSettingsModal';
 
 export const LoginPage: React.FC = () => {
-  const { loginWithSupabase, loginAsDemo, isSupabaseConnected } = useAuth();
+  const { loginWithSupabase, isSupabaseConnected } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,10 +38,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleDemoSelect = (name: UserProfileName) => {
-    loginAsDemo(name);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex flex-col justify-center items-center p-4 sm:p-6 selection:bg-emerald-500 selection:text-white pt-safe pb-safe">
       <div className="w-full max-w-md">
@@ -62,7 +54,7 @@ export const LoginPage: React.FC = () => {
             </span>
           </h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-1">
-            Personal finance & shared wealth management
+            Strictly Private • Tejas & Hetvi Only
           </p>
         </div>
 
@@ -75,7 +67,7 @@ export const LoginPage: React.FC = () => {
             <div>
               <h2 className="text-base sm:text-lg font-semibold text-white">Household Sign In</h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Strictly restricted to Tejas & Hetvi.
+                Authentication required to access records.
               </p>
             </div>
 
@@ -96,9 +88,9 @@ export const LoginPage: React.FC = () => {
               <div className="flex items-start gap-2">
                 <Database className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">Supabase Cloud not connected yet.</span>
+                  <span className="font-bold">Supabase Cloud not connected.</span>
                   <p className="text-[11px] text-amber-300/80 mt-0.5">
-                    Click settings to paste your Supabase Project URL & Anon Key.
+                    Click settings to connect your private Supabase database.
                   </p>
                 </div>
               </div>
@@ -131,7 +123,7 @@ export const LoginPage: React.FC = () => {
             <div className="mb-4 sm:mb-5 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-start gap-2.5 text-rose-300 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
               <div className="space-y-1">
-                <span className="font-bold block text-rose-200">Sign In Issue:</span>
+                <span className="font-bold block text-rose-200">Access Denied:</span>
                 <span className="leading-relaxed block">{errorMessage}</span>
               </div>
             </div>
@@ -190,61 +182,16 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Access Profile Selector */}
-          <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-800">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />
-                Quick Access
-              </span>
-              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Local Ledger
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => handleDemoSelect('Tejas')}
-                className="group p-2.5 sm:p-3 rounded-2xl bg-slate-800/60 hover:bg-sky-950/40 border border-slate-700/80 hover:border-sky-500/50 transition text-left flex items-center gap-2.5 sm:gap-3 active:scale-95"
-              >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-sm sm:text-base group-hover:scale-105 transition shrink-0">
-                  T
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-xs sm:text-sm font-semibold text-white group-hover:text-sky-300 transition">
-                    Tejas
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    Tap to enter
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoSelect('Hetvi')}
-                className="group p-2.5 sm:p-3 rounded-2xl bg-slate-800/60 hover:bg-pink-950/40 border border-slate-700/80 hover:border-pink-500/50 transition text-left flex items-center gap-2.5 sm:gap-3 active:scale-95"
-              >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center font-bold text-sm sm:text-base group-hover:scale-105 transition shrink-0">
-                  H
-                </div>
-                <div className="overflow-hidden">
-                  <div className="text-xs sm:text-sm font-semibold text-white group-hover:text-pink-300 transition">
-                    Hetvi
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    Tap to enter
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-5">
-          Encrypted private household ledger. Public registration disabled.
-        </p>
+        <div className="mt-5 text-center space-y-1">
+          <p className="text-xs text-slate-400">
+            🔒 Private Encrypted Household Ledger
+          </p>
+          <p className="text-[11px] text-slate-500">
+            Public sign-ups disabled. Access restricted strictly to Tejas & Hetvi.
+          </p>
+        </div>
       </div>
 
       {/* Cloud Settings Modal */}
