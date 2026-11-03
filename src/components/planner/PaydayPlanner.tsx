@@ -32,7 +32,6 @@ export const PaydayPlanner: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRec, setEditingRec] = useState<RecurringExpense | null>(null);
 
-  // Form states
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(DEFAULT_EXPENSE_CATEGORIES[0]);
@@ -42,7 +41,6 @@ export const PaydayPlanner: React.FC = () => {
   const [isEssential, setIsEssential] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Generate upcoming cash flow timeline for November/December 2026
   const events: Array<{
     date: string;
     title: string;
@@ -52,12 +50,10 @@ export const PaydayPlanner: React.FC = () => {
     category?: string;
   }> = [];
 
-  // Paychecks for Tejas & Hetvi
   incomeSettings.filter(s => s.isActive).forEach(setting => {
     const paycheckAmt = calculatePaycheckAmount(setting);
     const baseDate = new Date(setting.nextPayday || '2026-11-05');
 
-    // Project 4 occurrences
     for (let i = 0; i < 4; i++) {
       const occurrence = new Date(baseDate);
       if (setting.payFrequency === 'weekly') {
@@ -80,7 +76,6 @@ export const PaydayPlanner: React.FC = () => {
     }
   });
 
-  // Upcoming recurring bills
   recurringExpenses.filter(r => r.isActive).forEach(rec => {
     const baseDate = new Date(rec.nextPaymentDate || '2026-11-01');
     for (let i = 0; i < 2; i++) {
@@ -97,15 +92,12 @@ export const PaydayPlanner: React.FC = () => {
     }
   });
 
-  // Sort chronological
   events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Filter to next 45 days
   const todayStr = '2026-11-02';
   const upcomingEvents = events.filter(e => e.date >= todayStr).slice(0, 10);
 
-  // Running balance calculation
-  let runningBalance = 4250; // starting household cash balance
+  let runningBalance = 4250;
   const timelineWithBalance = upcomingEvents.map(e => {
     if (e.type === 'income') {
       runningBalance += e.amount;
@@ -187,64 +179,59 @@ export const PaydayPlanner: React.FC = () => {
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(v);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
               Cash Flow Forecast
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
             Payday & Bill Planner
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Coordinated cash flow forecast synchronizing Tejas and Hetvi&apos;s paydays against recurring bills.
+            Coordinated cash flow forecast syncing Tejas and Hetvi&apos;s paydays against recurring bills.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition self-start md:self-auto"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Add Recurring Bill</span>
         </button>
       </div>
 
-      {/* Paycheck Planning Timeline & Recurring Bills Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         
-        {/* Left Column: Upcoming Timeline (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        {/* Left Column: Upcoming Timeline */}
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-emerald-500" />
-              Upcoming Paydays & Bills Timeline
+              Paydays & Bills Timeline
             </h3>
-            <span className="text-xs text-slate-400">Next 45 Days</span>
+            <span className="text-[11px] text-slate-400">Next 45 Days</span>
           </div>
 
-          <div className="relative border-l-2 border-slate-200 dark:border-slate-800 ml-3 sm:ml-4 pl-4 sm:pl-6 space-y-5">
+          <div className="relative border-l-2 border-slate-200 dark:border-slate-800 ml-2.5 sm:ml-4 pl-3.5 sm:pl-6 space-y-3.5 sm:space-y-4">
             {timelineWithBalance.map((item, idx) => (
               <div key={idx} className="relative group">
-                {/* Dot */}
-                <div className={`absolute -left-[23px] sm:-left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 ${
-                  item.type === 'income'
-                    ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
-                    : 'bg-rose-500 shadow-sm shadow-rose-500/50'
+                <div className={`absolute -left-[20px] sm:-left-[31px] top-2 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-white dark:border-slate-900 ${
+                  item.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'
                 }`} />
 
-                {/* Content Box */}
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 transition flex items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-2.5 sm:gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400">
                         {item.date}
                       </span>
-                      <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full ${
+                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
                         item.userOrPayer === 'Tejas'
                           ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
                           : item.userOrPayer === 'Hetvi'
@@ -255,22 +242,22 @@ export const PaydayPlanner: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                    <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">
                       {item.title}
                     </div>
 
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      Est. Bank Cash: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{fmt(item.projectedBalance)}</span>
+                    <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+                      Bank: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{fmt(item.projectedBalance)}</span>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className={`text-base font-extrabold font-mono ${
+                  <div className="text-right shrink-0">
+                    <div className={`text-xs sm:text-base font-extrabold font-mono ${
                       item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'
                     }`}>
                       {item.type === 'income' ? '+' : '-'}{fmt(item.amount)}
                     </div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">
+                    <span className="text-[9px] uppercase font-bold text-slate-400">
                       {item.type}
                     </span>
                   </div>
@@ -280,78 +267,66 @@ export const PaydayPlanner: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Recurring Expenses List (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        {/* Right Column: Recurring Expenses List */}
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Repeat className="w-4 h-4 text-sky-500" />
               Active Recurring Bills
             </h3>
-            <span className="text-xs text-slate-400">
-              {recurringExpenses.length} configured
+            <span className="text-[11px] text-slate-400">
+              {recurringExpenses.length} bills
             </span>
           </div>
 
-          <p className="text-xs text-slate-500">
-            Automatically included in monthly projection calculations (Rogers, Bell, Hydro, Rent, etc.).
-          </p>
-
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
             {recurringExpenses.map(rec => (
               <div
                 key={rec.id}
-                className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3"
+                className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-2.5"
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                       {rec.description}
                     </span>
                     {rec.isEssential && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 shrink-0">
                         Essential
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                  <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
                     <span>{rec.category}</span>
                     <span>•</span>
-                    <span className={`font-semibold ${
-                      rec.paidBy === 'Tejas'
-                        ? 'text-sky-600'
-                        : rec.paidBy === 'Hetvi'
-                        ? 'text-pink-600'
-                        : 'text-purple-600'
-                    }`}>
-                      {rec.paidBy}
-                    </span>
+                    <span className="font-semibold">{rec.paidBy}</span>
                     <span>•</span>
                     <span>Due {rec.nextPaymentDate}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <div className="text-right">
-                    <div className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">
+                    <div className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white font-mono">
                       {fmt(rec.amount)}
                     </div>
-                    <div className="text-[10px] text-slate-400 capitalize">
+                    <div className="text-[9px] text-slate-400 capitalize">
                       {rec.frequency}
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1 ml-1">
+                  <div className="flex flex-col gap-0.5 ml-1">
                     <button
                       onClick={() => handleEdit(rec)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                      title="Edit recurring expense"
+                      className="p-1 rounded text-slate-400 hover:text-slate-700"
+                      title="Edit"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(rec.id, rec.description)}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 transition"
-                      title="Delete recurring expense"
+                      className="p-1 rounded text-slate-400 hover:text-rose-600"
+                      title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -364,20 +339,21 @@ export const PaydayPlanner: React.FC = () => {
 
       </div>
 
-      {/* Modal for Add / Edit Recurring */}
+      {/* Modal - Mobile Bottom Sheet */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="fixed inset-0" onClick={() => setIsModalOpen(false)} />
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-5 sm:p-6 shadow-2xl z-10 pb-safe">
+            <div className="flex justify-between items-center mb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 {editingRec ? 'Edit Recurring Bill' : 'Add Recurring Bill'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Description *
@@ -401,6 +377,7 @@ export const PaydayPlanner: React.FC = () => {
                     type="number"
                     step="0.01"
                     min="0"
+                    inputMode="decimal"
                     required
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -449,7 +426,7 @@ export const PaydayPlanner: React.FC = () => {
                   <select
                     value={paidBy}
                     onChange={(e) => setPaidBy(e.target.value as PaidBy)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   >
                     <option value="Tejas">Tejas</option>
                     <option value="Hetvi">Hetvi</option>
@@ -480,22 +457,22 @@ export const PaydayPlanner: React.FC = () => {
                   className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer"
                 />
                 <label htmlFor="essentialCheck" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
-                  Mark as Essential (e.g. Rent, Hydro, Bell, Rogers)
+                  Mark as Essential (Rent, Hydro, Bell, Rogers)
                 </label>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                  className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Bill'}
                 </button>

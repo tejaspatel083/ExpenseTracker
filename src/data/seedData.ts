@@ -841,3 +841,4 @@ export const SEED_TRANSACTIONS: Transaction[] = [
     createdBy: 'Hetvi'
   }
 ];
+

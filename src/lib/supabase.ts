@@ -64,3 +64,4 @@ export const getSupabase = (): SupabaseClient | null => {
   }
   return supabaseInstance;
 };
+

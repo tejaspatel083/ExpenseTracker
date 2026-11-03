@@ -15,21 +15,15 @@ export const AnalyticsView: React.FC = () => {
   const { transactions, selectedMonth } = useFinance();
   const [dateRange, setDateRange] = useState<'thisMonth' | '3months' | '6months' | 'thisYear'>('6months');
 
-  // Filter transactions according to selected range
   const filteredTx = useMemo(() => {
-    const today = new Date('2026-11-02');
     return transactions.filter(t => {
-      const txDate = new Date(t.date);
       if (dateRange === 'thisMonth') {
         return t.date.startsWith(selectedMonth);
       } else if (dateRange === '3months') {
-        // Sep, Oct, Nov
         return t.date >= '2026-09-01' && t.date <= '2026-11-30';
       } else if (dateRange === '6months') {
-        // Jun to Nov
         return t.date >= '2026-06-01' && t.date <= '2026-11-30';
       } else {
-        // 2026 Full Year
         return t.date.startsWith('2026');
       }
     });
@@ -101,9 +95,7 @@ export const AnalyticsView: React.FC = () => {
       let income = mTx.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
       const expense = mTx.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
 
-      // Default projected baseline if no explicit income record for past month
       if (income === 0 && expense > 0) income = 4200;
-
       const savings = Math.max(0, income - expense);
 
       return {
@@ -125,29 +117,29 @@ export const AnalyticsView: React.FC = () => {
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(v);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       
       {/* Analytics Header with Date Range Filter */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-              Financial Intelligence
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+              Intelligence
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
-            Household Analytics & Trends
+          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+            Analytics & Trends
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Automated intelligence on category distribution, savings trajectory, and individual spending.
+            Category distribution, savings trajectory, and payer comparison.
           </p>
         </div>
 
-        {/* Date Range Selector */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl text-xs font-semibold self-start md:self-auto">
+        {/* Date Range Selector (Scrollable on mobile) */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-xs font-semibold overflow-x-auto no-scrollbar max-w-full">
           <button
             onClick={() => setDateRange('thisMonth')}
-            className={`px-3 py-1.5 rounded-xl transition ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
               dateRange === 'thisMonth' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
             }`}
           >
@@ -155,7 +147,7 @@ export const AnalyticsView: React.FC = () => {
           </button>
           <button
             onClick={() => setDateRange('3months')}
-            className={`px-3 py-1.5 rounded-xl transition ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
               dateRange === '3months' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
             }`}
           >
@@ -163,7 +155,7 @@ export const AnalyticsView: React.FC = () => {
           </button>
           <button
             onClick={() => setDateRange('6months')}
-            className={`px-3 py-1.5 rounded-xl transition ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
               dateRange === '6months' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
             }`}
           >
@@ -171,34 +163,34 @@ export const AnalyticsView: React.FC = () => {
           </button>
           <button
             onClick={() => setDateRange('thisYear')}
-            className={`px-3 py-1.5 rounded-xl transition ${
+            className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
               dateRange === 'thisYear' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
             }`}
           >
-            This Year (2026)
+            2026 Year
           </button>
         </div>
       </div>
 
       {/* Row 1: Donut Category Breakdown + Payer Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         
         {/* Spending by Category (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <PieIcon className="w-4 h-4 text-emerald-500" />
               Spending by Category
             </h3>
-            <span className="text-xs font-semibold text-slate-500">
+            <span className="text-xs font-semibold text-slate-500 font-mono">
               Total {fmt(categorySpending.total)}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             {/* Donut representation */}
-            <div className="relative flex items-center justify-center py-4">
-              <svg className="w-48 h-48 -rotate-90 transform" viewBox="0 0 100 100">
+            <div className="relative flex items-center justify-center py-2 sm:py-4">
+              <svg className="w-40 h-40 sm:w-48 sm:h-48 -rotate-90 transform" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="38" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="12" fill="none" />
                 {(() => {
                   let accumulated = 0;
@@ -225,24 +217,24 @@ export const AnalyticsView: React.FC = () => {
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                <span className="text-xs text-slate-400 font-medium">Expenses</span>
-                <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono">
+                <span className="text-[10px] sm:text-xs text-slate-400">Total Spent</span>
+                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-mono">
                   {fmt(categorySpending.total)}
                 </span>
               </div>
             </div>
 
             {/* Category Legend */}
-            <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
               {categorySpending.items.slice(0, 7).map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-slate-700 dark:text-slate-300 font-medium">{item.category}</span>
+                  <div className="flex items-center gap-1.5 truncate mr-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{item.category}</span>
                   </div>
-                  <div className="flex items-center gap-2 font-mono">
+                  <div className="flex items-center gap-1.5 font-mono shrink-0">
                     <span className="text-slate-900 dark:text-white font-bold">{fmt(item.amount)}</span>
-                    <span className="text-slate-400 text-[11px] w-8 text-right">({item.percentage}%)</span>
+                    <span className="text-slate-400 text-[10px] w-7 text-right">({item.percentage}%)</span>
                   </div>
                 </div>
               ))}
@@ -250,61 +242,58 @@ export const AnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Household Spending Comparison (Tejas vs Hetvi vs Shared) (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        {/* Household Spending Comparison (5 cols) */}
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Layers className="w-4 h-4 text-sky-500" />
                 Spending Comparison
               </h3>
               <span className="text-xs text-slate-500">Payer Split</span>
             </div>
 
-            <div className="space-y-5">
-              {/* Tejas */}
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                  <span className="text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500" /> Tejas
+                  <span className="text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-sky-500" /> Tejas
                   </span>
-                  <span className="text-slate-900 dark:text-white font-bold font-mono">{fmt(householdSplit.tejas)} ({householdSplit.tejasPct}%)</span>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">{fmt(householdSplit.tejas)} ({householdSplit.tejasPct}%)</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div className="bg-sky-500 h-3 rounded-full" style={{ width: `${householdSplit.tejasPct}%` }} />
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div className="bg-sky-500 h-2.5 rounded-full" style={{ width: `${householdSplit.tejasPct}%` }} />
                 </div>
               </div>
 
-              {/* Hetvi */}
               <div>
                 <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                  <span className="text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> Hetvi
+                  <span className="text-pink-600 dark:text-pink-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-pink-500" /> Hetvi
                   </span>
-                  <span className="text-slate-900 dark:text-white font-bold font-mono">{fmt(householdSplit.hetvi)} ({householdSplit.hetviPct}%)</span>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">{fmt(householdSplit.hetvi)} ({householdSplit.hetviPct}%)</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div className="bg-pink-500 h-3 rounded-full" style={{ width: `${householdSplit.hetviPct}%` }} />
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div className="bg-pink-500 h-2.5 rounded-full" style={{ width: `${householdSplit.hetviPct}%` }} />
                 </div>
               </div>
 
-              {/* Shared */}
               <div>
                 <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                  <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Shared (Household Joint)
+                  <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-purple-500" /> Shared (Household)
                   </span>
-                  <span className="text-slate-900 dark:text-white font-bold font-mono">{fmt(householdSplit.shared)} ({householdSplit.sharedPct}%)</span>
+                  <span className="text-slate-900 dark:text-white font-mono font-bold">{fmt(householdSplit.shared)} ({householdSplit.sharedPct}%)</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div className="bg-purple-500 h-3 rounded-full" style={{ width: `${householdSplit.sharedPct}%` }} />
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: `${householdSplit.sharedPct}%` }} />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-            <span>Combined Total</span>
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+            <span>Total Recorded</span>
             <span className="font-extrabold font-mono text-slate-900 dark:text-white text-sm">
               {fmt(householdSplit.total)}
             </span>
@@ -313,34 +302,34 @@ export const AnalyticsView: React.FC = () => {
 
       </div>
 
-      {/* Row 2: Income vs Expenses & Monthly Savings Trend */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+      {/* Row 2: 6-Month Trend Chart */}
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-emerald-500" />
-              Monthly Income vs Expenses vs Savings Trend (Last 6 Months)
+              Monthly Income vs Expenses vs Savings Trend
             </h3>
-            <p className="text-xs text-slate-500">
-              Interactive visualization from real recorded workbook data
+            <p className="text-[11px] text-slate-400">
+              Last 6 Months trajectory
             </p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Income
+          <div className="flex items-center gap-3 text-[11px] font-semibold">
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Income
             </span>
-            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Expenses
+            <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+              <span className="w-2 h-2 rounded-full bg-rose-500" /> Expenses
             </span>
-            <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-500" /> Net Savings
+            <span className="flex items-center gap-1 text-sky-600 dark:text-sky-400">
+              <span className="w-2 h-2 rounded-full bg-sky-500" /> Savings
             </span>
           </div>
         </div>
 
         {/* Bar Chart Visualization */}
-        <div className="grid grid-cols-6 gap-2 sm:gap-4 h-64 items-end pt-8 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="grid grid-cols-6 gap-1.5 sm:gap-4 h-52 sm:h-64 items-end pt-6 pb-2 border-b border-slate-200 dark:border-slate-800">
           {monthlyTrends.map((m) => {
             const incomeH = Math.round((m.income / maxMonthlyVal) * 100);
             const expenseH = Math.round((m.expense / maxMonthlyVal) * 100);
@@ -348,46 +337,33 @@ export const AnalyticsView: React.FC = () => {
 
             return (
               <div key={m.key} className="flex flex-col items-center h-full justify-end group">
-                {/* Bars group */}
                 <div className="flex items-end gap-1 sm:gap-1.5 w-full justify-center h-full">
-                  {/* Income Bar */}
                   <div
                     title={`Income: ${fmt(m.income)}`}
-                    className="w-2.5 sm:w-5 bg-emerald-500 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
+                    className="w-2 sm:w-5 bg-emerald-500 rounded-t transition-all duration-500"
                     style={{ height: `${Math.max(4, incomeH)}%` }}
                   />
-                  {/* Expense Bar */}
                   <div
                     title={`Expenses: ${fmt(m.expense)}`}
-                    className="w-2.5 sm:w-5 bg-rose-500 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
+                    className="w-2 sm:w-5 bg-rose-500 rounded-t transition-all duration-500"
                     style={{ height: `${Math.max(4, expenseH)}%` }}
                   />
-                  {/* Savings Bar */}
                   <div
-                    title={`Net Savings: ${fmt(m.savings)}`}
-                    className="w-2.5 sm:w-5 bg-sky-500 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
+                    title={`Savings: ${fmt(m.savings)}`}
+                    className="w-2 sm:w-5 bg-sky-500 rounded-t transition-all duration-500"
                     style={{ height: `${Math.max(4, savingsH)}%` }}
                   />
                 </div>
 
-                {/* Month label */}
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-2">
+                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1.5">
                   {m.label}
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[9px] text-slate-400 font-mono hidden sm:inline">
                   +{fmt(m.savings)}
                 </span>
               </div>
             );
           })}
-        </div>
-
-        {/* Footer Note */}
-        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-          <span>Data derived automatically from Supabase transaction logs.</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-            Average Monthly Savings: {fmt(monthlyTrends.reduce((s, m) => s + m.savings, 0) / (monthlyTrends.length || 1))}
-          </span>
         </div>
       </div>
 

@@ -26,11 +26,9 @@ export const SavingsGoals: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
 
-  // Deposit modal state
   const [depositModalGoal, setDepositModalGoal] = useState<SavingsGoal | null>(null);
   const [depositAmount, setDepositAmount] = useState('');
 
-  // Form states
   const [title, setTitle] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [currentAmount, setCurrentAmount] = useState('');
@@ -134,96 +132,94 @@ export const SavingsGoals: React.FC = () => {
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(v);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       
       {/* Top Banner */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-              Wealth Accumulation
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+              Wealth Targets
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
-            Savings & Investment Goals
+          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+            Savings & Goals
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Household emergency funds, vacation dreams, TFSA targets, and personal goals.
+            Emergency funds, vacation dreams, TFSA targets, and personal goals.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition self-start md:self-auto"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>New Savings Goal</span>
+          <span>New Goal</span>
         </button>
       </div>
 
       {/* Aggregate Overview Card */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-700 rounded-3xl p-6 text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-700 rounded-3xl p-4 sm:p-6 text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-emerald-100 flex items-center gap-1.5">
+            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-100 flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Total Household Milestones</span>
+              <span>Combined Family Milestones</span>
             </div>
-            <div className="text-3xl sm:text-4xl font-extrabold mt-1">
+            <div className="text-2xl sm:text-4xl font-extrabold mt-1">
               {fmt(totalSaved)}
-              <span className="text-base font-normal text-emerald-200 ml-2">of {fmt(totalTarget)} target</span>
+              <span className="text-xs sm:text-base font-normal text-emerald-200 ml-1.5">of {fmt(totalTarget)} target</span>
             </div>
-            <p className="text-xs text-emerald-100 mt-1">
-              {overallPercentage}% of combined family financial goals funded!
+            <p className="text-[11px] sm:text-xs text-emerald-100 mt-0.5">
+              {overallPercentage}% of combined targets achieved
             </p>
           </div>
 
-          <div className="w-full sm:w-64 bg-black/20 backdrop-blur-sm p-4 rounded-2xl border border-white/10">
-            <div className="flex justify-between text-xs font-bold mb-1.5">
+          <div className="w-full sm:w-64 bg-black/20 backdrop-blur-sm p-3 sm:p-4 rounded-2xl border border-white/10">
+            <div className="flex justify-between text-xs font-bold mb-1">
               <span>Overall Progress</span>
               <span>{overallPercentage}%</span>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
               <div
-                className="bg-white h-3 rounded-full transition-all duration-500"
+                className="bg-white h-2.5 rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, overallPercentage)}%` }}
               />
             </div>
           </div>
         </div>
-
-        <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl w-fit">
+      {/* Filter Tabs (Scrollable on phones) */}
+      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
         <button
           onClick={() => setActiveFilter('all')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
             activeFilter === 'all'
               ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              : 'text-slate-500'
           }`}
         >
-          All Goals ({savingsGoals.length})
+          All ({savingsGoals.length})
         </button>
         <button
           onClick={() => setActiveFilter('household')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
             activeFilter === 'household'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400'
+              : 'text-slate-500'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Household Shared</span>
+          <span>Shared</span>
         </button>
         <button
           onClick={() => setActiveFilter('Tejas')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
             activeFilter === 'Tejas'
               ? 'bg-sky-500 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400'
+              : 'text-slate-500'
           }`}
         >
           <User className="w-3.5 h-3.5" />
@@ -231,10 +227,10 @@ export const SavingsGoals: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveFilter('Hetvi')}
-          className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1 ${
             activeFilter === 'Hetvi'
               ? 'bg-pink-500 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400'
+              : 'text-slate-500'
           }`}
         >
           <Heart className="w-3.5 h-3.5" />
@@ -243,7 +239,7 @@ export const SavingsGoals: React.FC = () => {
       </div>
 
       {/* Goals Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
         {filteredGoals.map((goal) => {
           const percentage = goal.targetAmount > 0
             ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100))
@@ -254,57 +250,54 @@ export const SavingsGoals: React.FC = () => {
           return (
             <div
               key={goal.id}
-              className={`bg-white dark:bg-slate-900 p-6 rounded-3xl border transition shadow-sm relative flex flex-col justify-between ${
+              className={`bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition shadow-sm relative flex flex-col justify-between ${
                 isComplete
                   ? 'border-emerald-400 dark:border-emerald-700 ring-1 ring-emerald-500/20'
                   : 'border-slate-200 dark:border-slate-800'
               }`}
             >
               <div>
-                {/* Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                     goal.owner === 'Tejas'
                       ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
                       : goal.owner === 'Hetvi'
                       ? 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
                       : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                   }`}>
-                    {goal.owner === 'household' ? 'Household Shared' : `${goal.owner}'s Goal`}
+                    {goal.owner === 'household' ? 'Shared' : `${goal.owner}'s`}
                   </span>
 
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(goal)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-                      title="Edit goal"
+                      className="p-1 rounded text-slate-400 hover:text-slate-600"
+                      title="Edit"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(goal.id, goal.title)}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 transition"
-                      title="Delete goal"
+                      className="p-1 rounded text-slate-400 hover:text-rose-600"
+                      title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Title */}
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   {goal.title}
                 </h3>
                 {goal.notes && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                     {goal.notes}
                   </p>
                 )}
 
-                {/* Progress Stats */}
-                <div className="mt-4">
+                <div className="mt-3 sm:mt-4">
                   <div className="flex justify-between items-baseline mb-1">
-                    <span className="text-xl font-extrabold text-slate-900 dark:text-white">
+                    <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-mono">
                       {fmt(goal.currentAmount)}
                     </span>
                     <span className="text-xs text-slate-500">
@@ -312,31 +305,24 @@ export const SavingsGoals: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        isComplete
-                          ? 'bg-emerald-500'
-                          : goal.owner === 'Tejas'
-                          ? 'bg-sky-500'
-                          : goal.owner === 'Hetvi'
-                          ? 'bg-pink-500'
-                          : 'bg-teal-500'
+                      className={`h-2.5 rounded-full transition-all duration-500 ${
+                        isComplete ? 'bg-emerald-500' : 'bg-teal-500'
                       }`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
 
-                  <div className="flex justify-between items-center text-xs mt-2 text-slate-500">
-                    <span>{percentage}% achieved</span>
+                  <div className="flex justify-between items-center text-[11px] mt-1.5 text-slate-500">
+                    <span>{percentage}% reached</span>
                     <span>Target: {goal.targetDate}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Deposit Action Button */}
-              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-400">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-slate-400">
                   {isComplete ? '🎉 Target reached!' : `${fmt(remaining)} left`}
                 </span>
                 <button
@@ -344,7 +330,7 @@ export const SavingsGoals: React.FC = () => {
                     setDepositModalGoal(goal);
                     setDepositAmount('');
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition flex items-center gap-1.5"
+                  className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Deposit</span>
@@ -356,20 +342,21 @@ export const SavingsGoals: React.FC = () => {
         })}
       </div>
 
-      {/* Goal Add / Edit Modal */}
+      {/* Goal Add / Edit Modal - Bottom Sheet */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="fixed inset-0" onClick={() => setIsModalOpen(false)} />
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-5 sm:p-6 shadow-2xl z-10 pb-safe">
+            <div className="flex justify-between items-center mb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 {editingGoal ? 'Edit Goal' : 'Create Savings Goal'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Goal Title *
@@ -393,6 +380,7 @@ export const SavingsGoals: React.FC = () => {
                     type="number"
                     step="1"
                     min="1"
+                    inputMode="numeric"
                     required
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
@@ -409,10 +397,11 @@ export const SavingsGoals: React.FC = () => {
                     type="number"
                     step="1"
                     min="0"
+                    inputMode="numeric"
                     value={currentAmount}
                     onChange={(e) => setCurrentAmount(e.target.value)}
                     placeholder="0"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   />
                 </div>
               </div>
@@ -425,7 +414,7 @@ export const SavingsGoals: React.FC = () => {
                   <select
                     value={owner}
                     onChange={(e) => setOwner(e.target.value as GoalOwner)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                   >
                     <option value="household">Household Shared</option>
                     <option value="Tejas">Tejas</option>
@@ -449,29 +438,29 @@ export const SavingsGoals: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Notes / Monthly Contribution Plan
+                  Notes / Contribution Plan
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="e.g. Save $650 from each month's surplus..."
+                  placeholder="e.g. Save $650 each month from surplus..."
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                  className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Goal'}
                 </button>
@@ -481,24 +470,25 @@ export const SavingsGoals: React.FC = () => {
         </div>
       )}
 
-      {/* Deposit Modal */}
+      {/* Deposit Modal - Bottom Sheet */}
       {depositModalGoal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
-            <div className="flex justify-between items-center mb-3">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="fixed inset-0" onClick={() => setDepositModalGoal(null)} />
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-sm p-5 sm:p-6 shadow-2xl z-10 pb-safe">
+            <div className="flex justify-between items-center mb-2">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Deposit to {depositModalGoal.title}
               </h3>
-              <button onClick={() => setDepositModalGoal(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setDepositModalGoal(null)} className="text-slate-400 p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 mb-4">
-              Add funds toward this goal. Current progress: {fmt(depositModalGoal.currentAmount)} / {fmt(depositModalGoal.targetAmount)}.
+            <p className="text-xs text-slate-500 mb-3">
+              Add funds toward this goal ({fmt(depositModalGoal.currentAmount)} / {fmt(depositModalGoal.targetAmount)}).
             </p>
 
-            <form onSubmit={handleDepositSubmit} className="space-y-4">
+            <form onSubmit={handleDepositSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Deposit Amount (CAD $) *
@@ -507,16 +497,17 @@ export const SavingsGoals: React.FC = () => {
                   type="number"
                   step="1"
                   min="1"
+                  inputMode="numeric"
                   required
                   autoFocus
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
                   placeholder="e.g. 500"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-base font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-base font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setDepositModalGoal(null)}
@@ -526,7 +517,7 @@ export const SavingsGoals: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+                  className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
                 >
                   Confirm Deposit
                 </button>

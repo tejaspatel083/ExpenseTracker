@@ -43,14 +43,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<'income' | 'supabase' | 'backup'>(initialTab);
 
-  // Supabase keys state
   const config = getSupabaseConfig();
   const [supabaseUrl, setSupabaseUrl] = useState(config.url);
   const [supabaseKey, setSupabaseKey] = useState(config.anonKey);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
 
-  // Income edits local state
   const tejasIncome = incomeSettings.find(s => s.userName === 'Tejas') || incomeSettings[0];
   const hetviIncome = incomeSettings.find(s => s.userName === 'Hetvi') || incomeSettings[1];
 
@@ -68,8 +66,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const [isSavingIncome, setIsSavingIncome] = useState(false);
   const [incomeSaveSuccess, setIncomeSaveSuccess] = useState(false);
-
-  // Import JSON input ref
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -166,7 +162,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const fmt = (v: number) =>
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(v);
 
-  // Compute live expected paycheck previews
   const tPaycheck = tejasIncome ? calculatePaycheckAmount({ ...tejasIncome, annualSalary: parseFloat(tSalary) || 0, payFrequency: tFreq }) : 0;
   const tMonthly = tejasIncome ? calculateMonthlyProjectedIncome({ ...tejasIncome, annualSalary: parseFloat(tSalary) || 0, payFrequency: tFreq }) : 0;
 
@@ -174,107 +169,112 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const hMonthly = hetviIncome ? calculateMonthlyProjectedIncome({ ...hetviIncome, annualSalary: parseFloat(hSalary) || 0, payFrequency: hFreq }) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="fixed inset-0" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] z-10 pb-safe">
         
+        {/* Mobile handle */}
+        <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 sm:hidden" />
+
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
-              <Settings className="w-5 h-5" />
+        <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Household Settings & Configuration
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                Household Settings
               </h3>
-              <p className="text-xs text-slate-500">
-                Income modeling, Supabase cloud sync, and backup exports.
+              <p className="text-[11px] text-slate-500">
+                Income modeling, Supabase cloud sync & backups.
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex border-b border-slate-100 dark:border-slate-800 px-6 bg-slate-50/50 dark:bg-slate-900/50">
+        {/* Tab Switcher (Scrollable on small screens) */}
+        <div className="flex border-b border-slate-100 dark:border-slate-800 px-3 sm:px-6 bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('income')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
               activeTab === 'income'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                : 'border-transparent text-slate-500'
             }`}
           >
-            <DollarSign className="w-4 h-4" />
-            <span>Salary & Income Settings</span>
+            <DollarSign className="w-3.5 h-3.5" />
+            <span>Salary & Income</span>
           </button>
 
           <button
             onClick={() => setActiveTab('supabase')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
               activeTab === 'supabase'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                : 'border-transparent text-slate-500'
             }`}
           >
-            <Database className="w-4 h-4" />
-            <span>Supabase Cloud Sync</span>
+            <Database className="w-3.5 h-3.5" />
+            <span>Supabase Cloud</span>
           </button>
 
           <button
             onClick={() => setActiveTab('backup')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 sm:px-4 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
               activeTab === 'backup'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                : 'border-transparent text-slate-500'
             }`}
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span>Backup & Export</span>
           </button>
         </div>
 
         {/* Tab Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6">
           
           {/* TAB 1: INCOME SETTINGS */}
           {activeTab === 'income' && (
-            <form onSubmit={handleSaveIncome} className="space-y-6">
+            <form onSubmit={handleSaveIncome} className="space-y-4 sm:space-y-6">
               
               {incomeSaveSuccess && (
-                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Income settings updated and recalculated across all projections!</span>
+                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>Income settings updated and recalculated across all views!</span>
                 </div>
               )}
 
               {/* Tejas Profile */}
-              <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-sky-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                       Tejas Income Settings
                     </h4>
                   </div>
-                  <span className="text-xs font-mono text-sky-600 dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/70 px-2.5 py-1 rounded-full border border-sky-200 dark:border-sky-800">
-                    Est. Paycheck: {fmt(tPaycheck)} ({tFreq})
+                  <span className="text-xs font-mono text-sky-600 dark:text-sky-400 font-bold self-start sm:self-auto">
+                    Paycheck: {fmt(tPaycheck)} ({tFreq})
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Annual Salary (CAD $)
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
                       value={tSalary}
                       onChange={(e) => setTSalary(e.target.value)}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-bold"
@@ -322,33 +322,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
-                  <span>Projected Monthly Contribution: <strong>{fmt(tMonthly)}/mo</strong></span>
-                  <span>Annual Bonus Target: {fmt(parseFloat(tBonus) || 0)}</span>
+                <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
+                  <span>Projected: <strong>{fmt(tMonthly)}/mo</strong></span>
                 </div>
               </div>
 
               {/* Hetvi Profile */}
-              <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-pink-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-pink-500" />
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                       Hetvi Income Settings
                     </h4>
                   </div>
-                  <span className="text-xs font-mono text-pink-600 dark:text-pink-400 font-bold bg-pink-50 dark:bg-pink-950/70 px-2.5 py-1 rounded-full border border-pink-200 dark:border-pink-800">
-                    Est. Paycheck: {fmt(hPaycheck)} ({hFreq})
+                  <span className="text-xs font-mono text-pink-600 dark:text-pink-400 font-bold self-start sm:self-auto">
+                    Paycheck: {fmt(hPaycheck)} ({hFreq})
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Annual Salary (CAD $)
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
                       value={hSalary}
                       onChange={(e) => setHSalary(e.target.value)}
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 font-bold"
@@ -396,17 +396,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
-                  <span>Projected Monthly Contribution: <strong>{fmt(hMonthly)}/mo</strong></span>
-                  <span>Annual Bonus Target: {fmt(parseFloat(hBonus) || 0)}</span>
+                <div className="text-[11px] text-slate-500 pt-1 flex justify-between">
+                  <span>Projected: <strong>{fmt(hMonthly)}/mo</strong></span>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-1">
                 <button
                   type="submit"
                   disabled={isSavingIncome}
-                  className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-emerald-600/20 transition disabled:opacity-50"
                 >
                   {isSavingIncome ? 'Saving Changes...' : 'Save Income Settings'}
                 </button>
@@ -417,17 +416,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* TAB 2: SUPABASE CLOUD SYNC */}
           {activeTab === 'supabase' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
                 <div className="font-bold flex items-center gap-1.5 mb-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  GitHub Pages + Supabase Integration
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  GitHub Pages & Supabase
                 </div>
-                Because this app is deployed as a static site on <strong>GitHub Pages</strong>, your credentials are saved directly in browser storage or injected at build-time. All data is synchronized securely with your private Supabase database.
+                Your credentials are stored securely in browser local storage. Transactions and budgets sync directly with your private Supabase database.
               </div>
 
-              <form onSubmit={handleSaveSupabase} className="space-y-4">
+              <form onSubmit={handleSaveSupabase} className="space-y-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Supabase Project URL *
@@ -438,7 +437,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={supabaseUrl}
                     onChange={(e) => setSupabaseUrl(e.target.value)}
                     placeholder="https://xyzcompany.supabase.co"
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -452,22 +451,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={supabaseKey}
                     onChange={(e) => setSupabaseKey(e.target.value)}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2">
                   <button
                     type="button"
                     onClick={handleTestSupabase}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+                    className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-300"
                   >
                     Test Connection
                   </button>
 
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition"
+                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20"
                   >
                     Save & Reconnect
                   </button>
@@ -480,16 +479,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               )}
 
-              {/* SQL Schema helper */}
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
                 <h5 className="text-xs font-bold text-slate-900 dark:text-white mb-1">
-                  Database Initialization Instructions:
+                  Database Setup:
                 </h5>
                 <ol className="text-xs text-slate-500 dark:text-slate-400 space-y-1 list-decimal list-inside">
-                  <li>Open your Supabase Dashboard: <code>SQL Editor</code></li>
-                  <li>Open the file <code>supabase_schema.sql</code> included in this project</li>
-                  <li>Copy and paste all SQL into the SQL Editor, then click <strong>Run</strong></li>
-                  <li>Create two user accounts in Supabase Auth: one for Tejas and one for Hetvi</li>
+                  <li>Run <code>supabase_schema.sql</code> in your Supabase SQL Editor.</li>
+                  <li>Create user accounts for Tejas and Hetvi under Supabase Auth.</li>
                 </ol>
               </div>
 
@@ -498,39 +494,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* TAB 3: BACKUP & DATA */}
           {activeTab === 'backup' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               
-              <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Export Household Ledger (JSON)
+                    Export Household Backup
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Download an offline encrypted backup of all transactions, recurring items, and goals.
+                  <p className="text-xs text-slate-500">
+                    Download an offline JSON ledger of all transactions and goals.
                   </p>
                 </div>
                 <button
                   onClick={handleDownloadJSON}
-                  className="px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold transition flex items-center gap-2 shrink-0"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold flex items-center justify-center gap-2"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Download Backup</span>
+                  <span>Download</span>
                 </button>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Restore from Backup File
+                    Restore from Backup
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500">
                     Import previously saved household JSON archive.
                   </p>
                 </div>
                 <div>
-                  <label className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer flex items-center gap-2">
+                  <label className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer flex items-center justify-center gap-2">
                     <Upload className="w-4 h-4" />
-                    <span>Select JSON File</span>
+                    <span>Select File</span>
                     <input
                       type="file"
                       accept=".json"
@@ -547,13 +543,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               )}
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div>
                   <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Reset to 2026 Reference Sheet Data
+                    Reset to 2026 Reference Sheet
                   </h5>
                   <p className="text-[11px] text-slate-400">
-                    Reloads the exact historical numbers from your Google Sheet image.
+                    Reloads the original numbers from your Google Sheet screenshot.
                   </p>
                 </div>
                 <button
@@ -564,7 +560,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       window.location.reload();
                     }
                   }}
-                  className="px-3.5 py-1.5 rounded-xl border border-rose-300 dark:border-rose-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold transition"
+                  className="px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-900 text-rose-600 text-xs font-semibold"
                 >
                   Reset Baseline
                 </button>

@@ -6,3 +6,4 @@ export default defineConfig({
   plugins: [react()],
   base: './', // Ensures GitHub Pages deployment works under any subpath
 })
+

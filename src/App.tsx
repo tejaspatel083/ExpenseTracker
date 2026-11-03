@@ -12,6 +12,7 @@ import { PaydayPlanner } from './components/planner/PaydayPlanner';
 import { SavingsGoals } from './components/savings/SavingsGoals';
 import { AnalyticsView } from './components/analytics/AnalyticsView';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { TransactionModal } from './components/transactions/TransactionModal';
 import { ShieldCheck, Heart } from 'lucide-react';
 
 const MainApplication: React.FC<{
@@ -22,6 +23,7 @@ const MainApplication: React.FC<{
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<'income' | 'supabase' | 'backup'>('income');
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   const handleOpenSettings = (tab: 'income' | 'supabase' | 'backup' = 'income') => {
     setSettingsInitialTab(tab);
@@ -58,14 +60,15 @@ const MainApplication: React.FC<{
         toggleDarkMode={toggleDarkMode}
       />
 
-      {/* Main Navigation Tab Bar */}
+      {/* Main Navigation Tab Bar (Top for desktop, Sticky bottom for mobile) */}
       <Navigation
         activeTab={activeTab}
         setActiveTab={handleTabSelect}
+        onQuickAdd={() => setIsQuickAddOpen(true)}
       />
 
       {/* Primary Application Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {activeTab === 'dashboard' && <HouseholdDashboard />}
         {activeTab === 'sheet' && <SheetMatrixView />}
         {activeTab === 'transactions' && <TransactionList />}
@@ -75,8 +78,8 @@ const MainApplication: React.FC<{
         {activeTab === 'analytics' && <AnalyticsView />}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
+      {/* Footer (hidden on small mobile to avoid bottom nav clash) */}
+      <footer className="hidden sm:block border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -89,6 +92,15 @@ const MainApplication: React.FC<{
           </div>
         </div>
       </footer>
+
+      {/* Quick Add Modal from Mobile Center Button */}
+      {isQuickAddOpen && (
+        <TransactionModal
+          isOpen={isQuickAddOpen}
+          initialType="expense"
+          onClose={() => setIsQuickAddOpen(false)}
+        />
+      )}
 
       {/* Settings Modal */}
       <SettingsModal
