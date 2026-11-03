@@ -3,6 +3,31 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const STORAGE_KEY_URL = 'household_supabase_url';
 const STORAGE_KEY_KEY = 'household_supabase_anon_key';
 
+/**
+ * Normalizes user input into a valid Supabase project URL (https://xyz.supabase.co)
+ */
+export function cleanSupabaseUrl(input: string): string {
+  if (!input) return '';
+  let val = input.trim();
+  
+  // If user pasted dashboard URL like https://supabase.com/dashboard/project/abcdefghijk/...
+  const dashMatch = val.match(/supabase\.com\/dashboard\/project\/([a-z0-9_-]+)/i);
+  if (dashMatch && dashMatch[1]) {
+    return `https://${dashMatch[1]}.supabase.co`;
+  }
+
+  // Ensure https protocol
+  if (!val.startsWith('http://') && !val.startsWith('https://')) {
+    val = 'https://' + val;
+  }
+
+  // Remove trailing slashes and any subpaths like /rest/v1
+  val = val.replace(/\/+$/, '');
+  val = val.replace(/\/(rest|auth)\/v1.*$/i, '');
+
+  return val;
+}
+
 export const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -10,8 +35,9 @@ export const getSupabaseConfig = () => {
   const localUrl = localStorage.getItem(STORAGE_KEY_URL);
   const localKey = localStorage.getItem(STORAGE_KEY_KEY);
 
-  const url = localUrl || envUrl || '';
-  const anonKey = localKey || envKey || '';
+  const rawUrl = localUrl || envUrl || '';
+  const url = cleanSupabaseUrl(rawUrl);
+  const anonKey = (localKey || envKey || '').trim();
 
   return {
     url,
@@ -21,10 +47,13 @@ export const getSupabaseConfig = () => {
 };
 
 export const saveSupabaseConfig = (url: string, anonKey: string) => {
-  if (url) localStorage.setItem(STORAGE_KEY_URL, url.trim());
+  const cleanedUrl = cleanSupabaseUrl(url);
+  const cleanedKey = (anonKey || '').trim();
+
+  if (cleanedUrl) localStorage.setItem(STORAGE_KEY_URL, cleanedUrl);
   else localStorage.removeItem(STORAGE_KEY_URL);
 
-  if (anonKey) localStorage.setItem(STORAGE_KEY_KEY, anonKey.trim());
+  if (cleanedKey) localStorage.setItem(STORAGE_KEY_KEY, cleanedKey);
   else localStorage.removeItem(STORAGE_KEY_KEY);
 
   // Reinitialize client
@@ -64,4 +93,3 @@ export const getSupabase = (): SupabaseClient | null => {
   }
   return supabaseInstance;
 };
-
