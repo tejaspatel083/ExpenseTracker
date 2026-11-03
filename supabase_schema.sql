@@ -118,3 +118,22 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Auto-confirm all unconfirmed users immediately (fixes "Email not confirmed yet" error)
+update auth.users
+set email_confirmed_at = now()
+where email_confirmed_at is null;
+
+-- Auto-confirm any new user upon signup so email verification is never required
+create or replace function public.auto_confirm_user()
+returns trigger as $$
+begin
+  new.email_confirmed_at := coalesce(new.email_confirmed_at, now());
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_confirm on auth.users;
+create trigger on_auth_user_confirm
+  before insert on auth.users
+  for each row execute procedure public.auto_confirm_user();
