@@ -65,3 +65,4 @@ export function generateDefaultPaychecks(
     amount: settings.defaultPaycheckAmount
   }));
 }
+

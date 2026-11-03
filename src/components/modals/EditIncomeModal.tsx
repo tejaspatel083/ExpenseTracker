@@ -388,3 +388,4 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
     </div>
   );
 };
+

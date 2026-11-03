@@ -35,7 +35,7 @@ create table if not exists public.allocations (
 
 -- 4. Simple Transactions
 create table if not exists public.simple_transactions (
-  id uuid default uuid_generate_v4() primary key,
+  id text primary key,
   date date not null default current_date,
   description text not null,
   category text not null,
@@ -44,11 +44,23 @@ create table if not exists public.simple_transactions (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 5. Paychecks (Bi-weekly Thursday paydays & variable amounts)
+create table if not exists public.paychecks (
+  id text primary key,
+  month text not null, -- Format: YYYY-MM
+  user_name text not null check (user_name in ('Tejas', 'Hetvi')),
+  date date not null,
+  label text not null,
+  amount numeric(12, 2) not null default 0.00 check (amount >= 0),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Row Level Security (RLS)
 alter table public.profiles enable row level security;
 alter table public.monthly_incomes enable row level security;
 alter table public.allocations enable row level security;
 alter table public.simple_transactions enable row level security;
+alter table public.paychecks enable row level security;
 
 -- Policies: Authenticated Tejas & Hetvi can access household financial records
 create policy "Allow authenticated read profiles" on public.profiles
@@ -61,6 +73,9 @@ create policy "Allow authenticated all on allocations" on public.allocations
   for all to authenticated using (true) with check (true);
 
 create policy "Allow authenticated all on simple_transactions" on public.simple_transactions
+  for all to authenticated using (true) with check (true);
+
+create policy "Allow authenticated all on paychecks" on public.paychecks
   for all to authenticated using (true) with check (true);
 
 -- Auto create profile on auth signup

@@ -148,6 +148,24 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Auto-update monthly income to the sum of paychecks
     const totalIncome = newPaychecks.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     await setMonthlyIncome(month, user, totalIncome);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConnected) {
+      try {
+        await supabase.from('paychecks').delete().match({ month, user_name: user });
+        const records = newPaychecks.map(p => ({
+          id: p.id,
+          month: p.month,
+          user_name: p.user,
+          date: p.date,
+          label: p.label,
+          amount: p.amount
+        }));
+        await supabase.from('paychecks').insert(records);
+      } catch (e) {
+        console.error('Supabase error saving paychecks:', e);
+      }
+    }
   };
 
   // Update user income settings (anchor date, pay frequency, base amount)
