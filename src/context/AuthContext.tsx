@@ -28,6 +28,8 @@ interface AuthContextType {
   supabaseUser: User | null;
   isSupabaseConnected: boolean;
   loginWithSupabase: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUpWithSupabase: (email: string, password: string) => Promise<{ success: boolean; error?: string; needConfirmation?: boolean }>;
+  loginWithHouseholdPin: (name: UserProfileName, pin: string) => { success: boolean; error?: string };
   loginAsDemo: (name: UserProfileName) => void;
   logout: () => Promise<void>;
   updateProfileName: (name: UserProfileName) => void;
@@ -35,10 +37,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Quick check if there is an active session in local storage
+const checkHasStoredSession = (): boolean => {
+  try {
+    if (localStorage.getItem('household_demo_user')) return true;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        const val = localStorage.getItem(key);
+        if (val && val.includes('access_token')) return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(checkHasStoredSession);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(false);
 
   useEffect(() => {
@@ -61,10 +80,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const supabase = getSupabase();
       if (isConfigured && supabase) {
         try {
-          // Timeout race ensures the app NEVER hangs on a blank loading screen
+          // Fast 1.2s timeout race ensures the app never hangs on a loading screen
           const sessionPromise = supabase.auth.getSession();
           const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null }, error: null }), 2000)
+            setTimeout(() => resolve({ data: { session: null }, error: null }), 1200)
           );
 
           const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
@@ -81,7 +100,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!isMounted) return;
             if (session?.user) {
               setSupabaseUser(session.user);
-              // Run profile resolution asynchronously to avoid deadlocks
               setTimeout(() => {
                 if (isMounted) resolveUserProfile(session.user);
               }, 0);
@@ -221,6 +239,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signUpWithSupabase = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string; needConfirmation?: boolean }> => {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return { success: false, error: 'Database connection not initialized.' };
+    }
+
+    try {
+      const emailTrim = email.trim();
+      const detectedName: UserProfileName =
+        (emailTrim.toLowerCase().includes('hetvi') || emailTrim.toLowerCase().includes('honey')) ? 'Hetvi' : 'Tejas';
+
+      const { data, error } = await supabase.auth.signUp({
+        email: emailTrim,
+        password: password,
+        options: {
+          data: { name: detectedName }
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.session?.user) {
+        setSupabaseUser(data.session.user);
+        await resolveUserProfile(data.session.user);
+        localStorage.removeItem('household_demo_user');
+        return { success: true };
+      }
+
+      // If user created but email confirmation is required by Supabase, allow instant access
+      loginAsDemo(detectedName);
+      return {
+        success: true,
+        needConfirmation: true
+      };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Sign up failed.' };
+    }
+  };
+
+  const loginWithHouseholdPin = (name: UserProfileName, pin: string): { success: boolean; error?: string } => {
+    const trimmed = pin.trim();
+    if (trimmed === '1234' || trimmed === '083' || trimmed === '2026' || trimmed === '83') {
+      loginAsDemo(name);
+      return { success: true };
+    }
+    return { success: false, error: 'Incorrect passcode. Try 1234.' };
+  };
+
   const loginAsDemo = (name: UserProfileName) => {
     localStorage.setItem('household_demo_user', name);
     setCurrentUser(createProfileObject(name, `${name.toLowerCase()}@household.local`));
@@ -257,6 +328,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         supabaseUser,
         isSupabaseConnected,
         loginWithSupabase,
+        signUpWithSupabase,
+        loginWithHouseholdPin,
         loginAsDemo,
         logout,
         updateProfileName

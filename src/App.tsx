@@ -28,7 +28,7 @@ const MainApplication: React.FC<{
   const [showSlowNotice, setShowSlowNotice] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSlowNotice(true), 3000);
+    const timer = setTimeout(() => setShowSlowNotice(true), 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -40,10 +40,13 @@ const MainApplication: React.FC<{
         {showSlowNotice && (
           <button
             type="button"
-            onClick={() => window.location.reload()}
-            className="mt-5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition cursor-pointer"
+            onClick={() => {
+              localStorage.removeItem('household_demo_user');
+              window.location.reload();
+            }}
+            className="mt-5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs border border-slate-700 transition cursor-pointer"
           >
-            Taking longer than expected? Tap to refresh
+            Continue to Sign In →
           </button>
         )}
       </div>

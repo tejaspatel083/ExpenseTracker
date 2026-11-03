@@ -61,35 +61,42 @@ interface FinanceContextType {
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 const LS_KEY = 'simple_tracker_';
 
+function safeJsonParse<T>(key: string, fallback: T): T {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return fallback;
+    const parsed = JSON.parse(saved);
+    return parsed !== null && parsed !== undefined ? parsed : fallback;
+  } catch (e) {
+    console.warn(`Failed to parse localStorage key "${key}", falling back to defaults:`, e);
+    return fallback;
+  }
+}
+
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isSupabaseConnected } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<string>('2026-11');
   const [selectedScope, setSelectedScope] = useState<UserViewScope>('household');
 
-  const [monthlyIncomes, setMonthlyIncomes] = useState<MonthlyUserIncome[]>(() => {
-    const saved = localStorage.getItem(`${LS_KEY}incomes`);
-    return saved ? JSON.parse(saved) : SEED_INCOMES;
-  });
+  const [monthlyIncomes, setMonthlyIncomes] = useState<MonthlyUserIncome[]>(() =>
+    safeJsonParse(`${LS_KEY}incomes`, SEED_INCOMES)
+  );
 
-  const [allocations, setAllocations] = useState<CategoryAllocation[]>(() => {
-    const saved = localStorage.getItem(`${LS_KEY}allocations`);
-    return saved ? JSON.parse(saved) : SEED_ALLOCATIONS;
-  });
+  const [allocations, setAllocations] = useState<CategoryAllocation[]>(() =>
+    safeJsonParse(`${LS_KEY}allocations`, SEED_ALLOCATIONS)
+  );
 
-  const [transactions, setTransactions] = useState<SimpleTransaction[]>(() => {
-    const saved = localStorage.getItem(`${LS_KEY}transactions`);
-    return saved ? JSON.parse(saved) : SEED_TRANSACTIONS;
-  });
+  const [transactions, setTransactions] = useState<SimpleTransaction[]>(() =>
+    safeJsonParse(`${LS_KEY}transactions`, SEED_TRANSACTIONS)
+  );
 
-  const [paychecks, setPaychecks] = useState<PaycheckEntry[]>(() => {
-    const saved = localStorage.getItem(`${LS_KEY}paychecks`);
-    return saved ? JSON.parse(saved) : SEED_PAYCHECKS;
-  });
+  const [paychecks, setPaychecks] = useState<PaycheckEntry[]>(() =>
+    safeJsonParse(`${LS_KEY}paychecks`, SEED_PAYCHECKS)
+  );
 
-  const [incomeSettings, setIncomeSettings] = useState<Record<UserProfileName, UserIncomeSettings>>(() => {
-    const saved = localStorage.getItem(`${LS_KEY}income_settings`);
-    return saved ? JSON.parse(saved) : DEFAULT_INCOME_SETTINGS;
-  });
+  const [incomeSettings, setIncomeSettings] = useState<Record<UserProfileName, UserIncomeSettings>>(() =>
+    safeJsonParse(`${LS_KEY}income_settings`, DEFAULT_INCOME_SETTINGS)
+  );
 
   useEffect(() => {
     localStorage.setItem(`${LS_KEY}incomes`, JSON.stringify(monthlyIncomes));
