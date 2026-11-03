@@ -22,6 +22,7 @@ export const PaydayPlanner: React.FC = () => {
   const {
     incomeSettings,
     recurringExpenses,
+    selectedScope,
     calculatePaycheckAmount,
     addRecurringExpense,
     updateRecurringExpense,
@@ -35,7 +36,7 @@ export const PaydayPlanner: React.FC = () => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(DEFAULT_EXPENSE_CATEGORIES[0]);
-  const [paidBy, setPaidBy] = useState<PaidBy>('Shared');
+  const [paidBy, setPaidBy] = useState<PaidBy>(selectedScope === 'household' ? 'Shared' : selectedScope as PaidBy);
   const [frequency, setFrequency] = useState<'monthly' | 'biweekly' | 'weekly' | 'annual'>('monthly');
   const [nextPaymentDate, setNextPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [isEssential, setIsEssential] = useState(true);
@@ -50,47 +51,53 @@ export const PaydayPlanner: React.FC = () => {
     category?: string;
   }> = [];
 
-  incomeSettings.filter(s => s.isActive).forEach(setting => {
-    const paycheckAmt = calculatePaycheckAmount(setting);
-    const baseDate = new Date(setting.nextPayday || '2026-11-05');
+  // Filter paydays: Household shows both; Tejas/Hetvi show only personal
+  incomeSettings
+    .filter(s => s.isActive && (selectedScope === 'household' || s.userName === selectedScope))
+    .forEach(setting => {
+      const paycheckAmt = calculatePaycheckAmount(setting);
+      const baseDate = new Date(setting.nextPayday || '2026-11-05');
 
-    for (let i = 0; i < 4; i++) {
-      const occurrence = new Date(baseDate);
-      if (setting.payFrequency === 'weekly') {
-        occurrence.setDate(baseDate.getDate() + i * 7);
-      } else if (setting.payFrequency === 'biweekly') {
-        occurrence.setDate(baseDate.getDate() + i * 14);
-      } else if (setting.payFrequency === 'twice_monthly') {
-        occurrence.setDate(baseDate.getDate() + i * 15);
-      } else {
-        occurrence.setMonth(baseDate.getMonth() + i);
+      for (let i = 0; i < 4; i++) {
+        const occurrence = new Date(baseDate);
+        if (setting.payFrequency === 'weekly') {
+          occurrence.setDate(baseDate.getDate() + i * 7);
+        } else if (setting.payFrequency === 'biweekly') {
+          occurrence.setDate(baseDate.getDate() + i * 14);
+        } else if (setting.payFrequency === 'twice_monthly') {
+          occurrence.setDate(baseDate.getDate() + i * 15);
+        } else {
+          occurrence.setMonth(baseDate.getMonth() + i);
+        }
+
+        events.push({
+          date: occurrence.toISOString().split('T')[0],
+          title: `${setting.userName} salary (${setting.employer || 'Employer'})`,
+          type: 'income',
+          amount: paycheckAmt,
+          userOrPayer: setting.userName
+        });
       }
+    });
 
-      events.push({
-        date: occurrence.toISOString().split('T')[0],
-        title: `${setting.userName} salary (${setting.employer || 'Employer'})`,
-        type: 'income',
-        amount: paycheckAmt,
-        userOrPayer: setting.userName
-      });
-    }
-  });
-
-  recurringExpenses.filter(r => r.isActive).forEach(rec => {
-    const baseDate = new Date(rec.nextPaymentDate || '2026-11-01');
-    for (let i = 0; i < 2; i++) {
-      const occurrence = new Date(baseDate);
-      occurrence.setMonth(baseDate.getMonth() + i);
-      events.push({
-        date: occurrence.toISOString().split('T')[0],
-        title: rec.description,
-        type: 'expense',
-        amount: rec.amount,
-        userOrPayer: rec.paidBy,
-        category: rec.category
-      });
-    }
-  });
+  // Filter recurring bills: Household shows all; Tejas/Hetvi show only personal bills
+  recurringExpenses
+    .filter(r => r.isActive && (selectedScope === 'household' ? true : r.paidBy === selectedScope))
+    .forEach(rec => {
+      const baseDate = new Date(rec.nextPaymentDate || '2026-11-01');
+      for (let i = 0; i < 2; i++) {
+        const occurrence = new Date(baseDate);
+        occurrence.setMonth(baseDate.getMonth() + i);
+        events.push({
+          date: occurrence.toISOString().split('T')[0],
+          title: rec.description,
+          type: 'expense',
+          amount: rec.amount,
+          userOrPayer: rec.paidBy,
+          category: rec.category
+        });
+      }
+    });
 
   events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -272,15 +279,17 @@ export const PaydayPlanner: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Repeat className="w-4 h-4 text-sky-500" />
-              Active Recurring Bills
+              <span>{selectedScope === 'household' ? 'All Recurring Bills' : `${selectedScope}'s Bills`}</span>
             </h3>
             <span className="text-[11px] text-slate-400">
-              {recurringExpenses.length} bills
+              {recurringExpenses.filter(r => selectedScope === 'household' ? true : r.paidBy === selectedScope).length} bills
             </span>
           </div>
 
           <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-            {recurringExpenses.map(rec => (
+            {recurringExpenses
+              .filter(r => selectedScope === 'household' ? true : r.paidBy === selectedScope)
+              .map(rec => (
               <div
                 key={rec.id}
                 className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-2.5"

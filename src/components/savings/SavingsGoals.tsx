@@ -19,12 +19,21 @@ import {
 } from 'lucide-react';
 
 export const SavingsGoals: React.FC = () => {
-  const { savingsGoals, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, depositToGoal } = useFinance();
+  const { savingsGoals, selectedScope, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, depositToGoal } = useFinance();
   const { currentUser } = useAuth();
 
-  const [activeFilter, setActiveFilter] = useState<'all' | GoalOwner>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | GoalOwner>(selectedScope === 'household' ? 'all' : selectedScope);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
+
+  // Sync with selected scope tab
+  React.useEffect(() => {
+    if (selectedScope === 'household') {
+      setActiveFilter('all');
+    } else {
+      setActiveFilter(selectedScope);
+    }
+  }, [selectedScope]);
 
   const [depositModalGoal, setDepositModalGoal] = useState<SavingsGoal | null>(null);
   const [depositAmount, setDepositAmount] = useState('');

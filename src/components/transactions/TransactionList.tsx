@@ -20,12 +20,12 @@ import {
 import { TransactionModal } from './TransactionModal';
 
 export const TransactionList: React.FC = () => {
-  const { transactions, deleteTransaction, selectedMonth } = useFinance();
+  const { transactions, deleteTransaction, selectedMonth, selectedScope } = useFinance();
   const { currentUser } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedPerson, setSelectedPerson] = useState<string>('all');
+  const [selectedPerson, setSelectedPerson] = useState<string>(selectedScope === 'household' ? 'all' : selectedScope);
   const [selectedType, setSelectedType] = useState<string>('all');
   const [monthFilter, setMonthFilter] = useState<string>(selectedMonth);
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
@@ -34,6 +34,15 @@ export const TransactionList: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  // Synchronize person filter with top scope tab
+  React.useEffect(() => {
+    if (selectedScope === 'household') {
+      setSelectedPerson('all');
+    } else {
+      setSelectedPerson(selectedScope);
+    }
+  }, [selectedScope]);
 
   // Available unique categories from data
   const availableCategories = useMemo(() => {
@@ -52,9 +61,9 @@ export const TransactionList: React.FC = () => {
       // Type
       if (selectedType !== 'all' && t.type !== selectedType) return false;
 
-      // Person (Paid by or Created by)
+      // Person: strictly matching selected person (personal only for Tejas or Hetvi)
       if (selectedPerson !== 'all') {
-        if (t.paidBy !== selectedPerson && t.createdBy !== selectedPerson) return false;
+        if (t.paidBy !== selectedPerson) return false;
       }
 
       // Category

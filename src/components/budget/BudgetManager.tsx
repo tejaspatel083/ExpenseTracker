@@ -17,12 +17,21 @@ import {
 } from 'lucide-react';
 
 export const BudgetManager: React.FC = () => {
-  const { budgets, transactions, selectedMonth, addBudget, updateBudget, deleteBudget } = useFinance();
+  const { budgets, transactions, selectedMonth, selectedScope, addBudget, updateBudget, deleteBudget } = useFinance();
   const { currentUser } = useAuth();
 
-  const [activeScopeFilter, setActiveScopeFilter] = useState<'all' | BudgetScope>('all');
+  const [activeScopeFilter, setActiveScopeFilter] = useState<'all' | BudgetScope>(selectedScope === 'household' ? 'all' : selectedScope);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+
+  // Sync with selected scope tab
+  React.useEffect(() => {
+    if (selectedScope === 'household') {
+      setActiveScopeFilter('all');
+    } else {
+      setActiveScopeFilter(selectedScope);
+    }
+  }, [selectedScope]);
 
   // Form states
   const [category, setCategory] = useState(DEFAULT_EXPENSE_CATEGORIES[0]);

@@ -15,7 +15,9 @@ import {
   Sparkles,
   CheckCircle,
   Clock,
-  DollarSign
+  DollarSign,
+  User,
+  PieChart
 } from 'lucide-react';
 import { TransactionModal } from '../transactions/TransactionModal';
 import { Transaction } from '../../types';
@@ -30,7 +32,8 @@ export const HouseholdDashboard: React.FC = () => {
     transactions,
     budgets,
     recurringExpenses,
-    savingsGoals
+    savingsGoals,
+    incomeSettings
   } = useFinance();
 
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -45,34 +48,47 @@ export const HouseholdDashboard: React.FC = () => {
   ];
   const monthName = monthNames[parseInt(monthNum, 10) - 1] || selectedMonth;
 
+  // Filter transactions strictly according to scope:
+  // - Household: shows both's personal and shared data
+  // - Tejas: ONLY shows Tejas's personal data
+  // - Hetvi: ONLY shows Hetvi's personal data
   const monthTransactions = transactions.filter(t => t.date.startsWith(selectedMonth));
   const filteredTransactions = monthTransactions.filter(t => {
-    if (selectedScope === 'household') return true;
-    return t.paidBy === selectedScope || t.paidBy === 'Shared';
+    if (selectedScope === 'household') {
+      return true; // Both users and shared
+    }
+    return t.paidBy === selectedScope; // Strictly their personal data!
   });
 
   const recentTransactions = [...filteredTransactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6);
 
+  // Strictly personal numbers for individual views, combined for household
   let displayIncome = summary.householdIncome;
   let displayExpenses = summary.householdExpenses;
 
   if (selectedScope === 'Tejas') {
     displayIncome = summary.tejasIncome;
-    displayExpenses = summary.tejasExpenses + (summary.sharedExpenses / 2);
+    displayExpenses = summary.tejasExpenses; // ONLY Tejas personal expenses
   } else if (selectedScope === 'Hetvi') {
     displayIncome = summary.hetviIncome;
-    displayExpenses = summary.hetviExpenses + (summary.sharedExpenses / 2);
+    displayExpenses = summary.hetviExpenses; // ONLY Hetvi personal expenses
   }
 
   const displayAvailable = displayIncome - displayExpenses;
   const displaySavings = Math.max(0, displayAvailable);
 
+  // Budget alerts strictly matching the active scope
   const budgetAlerts = budgets
-    .filter(b => b.month === selectedMonth || b.month === 'all')
+    .filter(b => {
+      const isMonthMatch = b.month === selectedMonth || b.month === 'all';
+      if (!isMonthMatch) return false;
+      if (selectedScope === 'household') return true;
+      return b.scope === selectedScope;
+    })
     .map(b => {
-      const spent = monthTransactions
+      const spent = filteredTransactions
         .filter(t => t.type === 'expense' && t.category.toLowerCase() === b.category.toLowerCase())
         .reduce((sum, t) => sum + Number(t.amount), 0);
       const percentage = b.amount > 0 ? Math.round((spent / b.amount) * 100) : 0;
@@ -85,6 +101,25 @@ export const HouseholdDashboard: React.FC = () => {
     })
     .filter(item => item.percentage >= 75)
     .sort((a, b) => b.percentage - a.percentage);
+
+  // Personal category breakdown for Tejas or Hetvi view
+  const personalCategories = React.useMemo(() => {
+    if (selectedScope === 'household') return [];
+    const catMap: Record<string, number> = {};
+    filteredTransactions.filter(t => t.type === 'expense').forEach(t => {
+      catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
+    });
+    return Object.entries(catMap)
+      .map(([name, amount]) => ({
+        name,
+        amount,
+        percentage: displayExpenses > 0 ? Math.round((amount / displayExpenses) * 100) : 0
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [filteredTransactions, selectedScope, displayExpenses]);
+
+  // Income sources for personal view
+  const personalIncomeSetting = incomeSettings.find(s => s.userName === selectedScope);
 
   const fmt = (val: number) =>
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(val);
@@ -104,23 +139,27 @@ export const HouseholdDashboard: React.FC = () => {
             <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
               {monthName} {year}
             </span>
-            {selectedScope !== 'household' && (
+            {selectedScope !== 'household' ? (
               <span className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full ${
                 selectedScope === 'Tejas'
                   ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300'
                   : 'bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300'
               }`}>
-                {selectedScope}&apos;s View
+                {selectedScope}&apos;s Personal View
+              </span>
+            ) : (
+              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300">
+                Combined & Shared
               </span>
             )}
           </div>
           <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
-            {selectedScope === 'household' ? 'Household Finances' : `${selectedScope}'s Ledger`}
+            {selectedScope === 'household' ? 'Combined Household Ledger' : `${selectedScope}'s Personal Finance`}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {selectedScope === 'household'
-              ? 'Combined income, expenses, and savings targets.'
-              : 'Individual cash flow and allocated shared bills.'}
+              ? 'Showing combined earnings, shared household expenses, and joint savings.'
+              : `Showing strictly ${selectedScope}'s personal income and personal expenses only.`}
           </p>
         </div>
 
@@ -150,18 +189,18 @@ export const HouseholdDashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Income
+              {selectedScope === 'household' ? 'Household Income' : `${selectedScope} Income`}
             </span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
-            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
               {fmt(displayIncome)}
             </div>
             <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate">
-              {selectedScope === 'household' ? 'Tejas + Hetvi' : 'Personal net'}
+              {selectedScope === 'household' ? 'Tejas + Hetvi' : 'Personal salary only'}
             </div>
           </div>
         </div>
@@ -170,18 +209,18 @@ export const HouseholdDashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Expenses
+              {selectedScope === 'household' ? 'Household Expenses' : `${selectedScope} Expenses`}
             </span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
-            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
               {fmt(displayExpenses)}
             </div>
             <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-rose-600 dark:text-rose-400 font-medium truncate">
-              Rent, bills & food
+              {selectedScope === 'household' ? 'Both & Shared living' : 'Personal spending only'}
             </div>
           </div>
         </div>
@@ -190,20 +229,20 @@ export const HouseholdDashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Available
+              {selectedScope === 'household' ? 'Available Cash' : 'Personal Net'}
             </span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center">
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
-            <div className={`text-lg sm:text-2xl lg:text-3xl font-extrabold ${
+            <div className={`text-lg sm:text-2xl lg:text-3xl font-extrabold font-mono ${
               displayAvailable >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600'
             }`}>
               {fmt(displayAvailable)}
             </div>
             <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-sky-600 dark:text-sky-400 font-medium truncate">
-              Net balance
+              After personal expenses
             </div>
           </div>
         </div>
@@ -212,155 +251,241 @@ export const HouseholdDashboard: React.FC = () => {
         <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Savings
+              {selectedScope === 'household' ? 'Household Savings' : 'Personal Savings'}
             </span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
               <PiggyBank className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-2 sm:mt-3">
-            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white font-mono">
               {fmt(displaySavings)}
             </div>
             <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 font-medium truncate">
-              TFSA & goals
+              {selectedScope === 'household' ? 'TFSA & Family goals' : 'Individual surplus'}
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Individual Contributions Split (Income & Expense split) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        
-        {/* Income Split */}
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
-              Income Contributions
-            </h3>
-            <span className="text-xs text-slate-500 font-mono">
-              Total {fmt(summary.householdIncome)}
-            </span>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
-            <div>
-              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
-                  <span className="text-slate-800 dark:text-slate-200">Tejas</span>
-                </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.tejasIncome)}</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className="bg-sky-500 h-2.5 rounded-full"
-                  style={{
-                    width: `${summary.householdIncome > 0 ? (summary.tejasIncome / summary.householdIncome) * 100 : 50}%`
-                  }}
-                />
-              </div>
+      {/* SECTION 2: HOUSEHOLD VIEW VS PERSONAL VIEW */}
+      {selectedScope === 'household' ? (
+        /* Household Mode: Show Both's Income and Both's + Shared Expenses */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          
+          {/* Income Split */}
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                Income Contributions (Both)
+              </h3>
+              <span className="text-xs text-slate-500 font-mono">
+                Total {fmt(summary.householdIncome)}
+              </span>
             </div>
 
-            <div>
-              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />
-                  <span className="text-slate-800 dark:text-slate-200">Hetvi</span>
+            <div className="space-y-3 sm:space-y-4">
+              <div>
+                <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+                    <span className="text-slate-800 dark:text-slate-200">Tejas</span>
+                  </div>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.tejasIncome)}</span>
                 </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.hetviIncome)}</span>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-sky-500 h-2.5 rounded-full"
+                    style={{
+                      width: `${summary.householdIncome > 0 ? (summary.tejasIncome / summary.householdIncome) * 100 : 50}%`
+                    }}
+                  />
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5 flex justify-between">
+                  <span>TechCorp Canada</span>
+                  <span>{summary.householdIncome > 0 ? Math.round((summary.tejasIncome / summary.householdIncome) * 100) : 0}% of household</span>
+                </div>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className="bg-pink-500 h-2.5 rounded-full"
-                  style={{
-                    width: `${summary.householdIncome > 0 ? (summary.hetviIncome / summary.householdIncome) * 100 : 50}%`
-                  }}
-                />
+
+              <div>
+                <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />
+                    <span className="text-slate-800 dark:text-slate-200">Hetvi</span>
+                  </div>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.hetviIncome)}</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-pink-500 h-2.5 rounded-full"
+                    style={{
+                      width: `${summary.householdIncome > 0 ? (summary.hetviIncome / summary.householdIncome) * 100 : 50}%`
+                    }}
+                  />
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5 flex justify-between">
+                  <span>Scotiabank</span>
+                  <span>{summary.householdIncome > 0 ? Math.round((summary.hetviIncome / summary.householdIncome) * 100) : 0}% of household</span>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Expenses Split (Tejas, Hetvi, Shared) */}
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 text-rose-500" />
+                Expenses Breakdown (Both & Shared)
+              </h3>
+              <span className="text-xs text-slate-500 font-mono">
+                Total {fmt(summary.householdExpenses)}
+              </span>
+            </div>
+
+            <div className="space-y-3 sm:space-y-4">
+              <div>
+                <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+                    <span className="text-slate-800 dark:text-slate-200">Tejas Personal</span>
+                  </div>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.tejasExpenses)}</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-sky-500 h-2 rounded-full"
+                    style={{
+                      width: `${summary.householdExpenses > 0 ? (summary.tejasExpenses / summary.householdExpenses) * 100 : 0}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />
+                    <span className="text-slate-800 dark:text-slate-200">Hetvi Personal</span>
+                  </div>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.hetviExpenses)}</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-pink-500 h-2 rounded-full"
+                    style={{
+                      width: `${summary.householdExpenses > 0 ? (summary.hetviExpenses / summary.householdExpenses) * 100 : 0}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                    <span className="text-slate-800 dark:text-slate-200">Shared (Rent, Bell, Hydro, Groceries)</span>
+                  </div>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.sharedExpenses)}</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-purple-500 h-2 rounded-full"
+                    style={{
+                      width: `${summary.householdExpenses > 0 ? (summary.sharedExpenses / summary.householdExpenses) * 100 : 0}%`
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
-
-        {/* Expenses Split */}
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <TrendingDown className="w-4 h-4 text-rose-500" />
-              Expenses Breakdown
-            </h3>
-            <span className="text-xs text-slate-500 font-mono">
-              Total {fmt(summary.householdExpenses)}
-            </span>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
-            <div>
-              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-sky-500" />
-                  <span className="text-slate-800 dark:text-slate-200">Tejas Direct</span>
-                </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.tejasExpenses)}</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-sky-500 h-2 rounded-full"
-                  style={{
-                    width: `${summary.householdExpenses > 0 ? (summary.tejasExpenses / summary.householdExpenses) * 100 : 0}%`
-                  }}
-                />
-              </div>
+      ) : (
+        /* Personal Mode (Tejas or Hetvi): Show ONLY personal breakdown, no shared data */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          
+          {/* Personal Income Profile */}
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <User className={`w-4 h-4 ${selectedScope === 'Tejas' ? 'text-sky-500' : 'text-pink-500'}`} />
+                {selectedScope}&apos;s Personal Income
+              </h3>
+              <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-full ${
+                selectedScope === 'Tejas' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300' : 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
+              }`}>
+                {fmt(displayIncome)}/mo
+              </span>
             </div>
 
-            <div>
-              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-pink-500" />
-                  <span className="text-slate-800 dark:text-slate-200">Hetvi Direct</span>
-                </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.hetviExpenses)}</span>
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Employer:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{personalIncomeSetting?.employer || 'Registered Employer'}</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-pink-500 h-2 rounded-full"
-                  style={{
-                    width: `${summary.householdExpenses > 0 ? (summary.hetviExpenses / summary.householdExpenses) * 100 : 0}%`
-                  }}
-                />
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Title:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{personalIncomeSetting?.title}</span>
               </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold mb-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                  <span className="text-slate-800 dark:text-slate-200">Shared (Rent & Utilities)</span>
-                </div>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(summary.sharedExpenses)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Annual Salary:</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(personalIncomeSetting?.annualSalary || 0)}</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-purple-500 h-2 rounded-full"
-                  style={{
-                    width: `${summary.householdExpenses > 0 ? (summary.sharedExpenses / summary.householdExpenses) * 100 : 0}%`
-                  }}
-                />
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Frequency:</span>
+                <span className="font-semibold capitalize text-slate-700 dark:text-slate-300">{personalIncomeSetting?.payFrequency}</span>
               </div>
             </div>
           </div>
+
+          {/* Personal Spending Categories */}
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PieChart className="w-4 h-4 text-emerald-500" />
+                {selectedScope}&apos;s Personal Expenses
+              </h3>
+              <span className="text-xs font-bold font-mono text-rose-600 dark:text-rose-400">
+                Total {fmt(displayExpenses)}
+              </span>
+            </div>
+
+            {personalCategories.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                No personal expenses recorded for {selectedScope} in {monthName}.
+              </div>
+            ) : (
+              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                {personalCategories.map((cat, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-slate-700 dark:text-slate-300">{cat.name}</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(cat.amount)} ({cat.percentage}%)</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-1.5 rounded-full ${selectedScope === 'Tejas' ? 'bg-sky-500' : 'bg-pink-500'}`}
+                        style={{ width: `${cat.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
+      )}
 
-      </div>
-
-      {/* Budget Alerts (if any) */}
+      {/* Budget Alerts (Filtered by scope) */}
       {budgetAlerts.length > 0 && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-4 sm:p-5">
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs sm:text-sm mb-2.5">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>Budget Warnings for {monthName}</span>
+            <span>Budget Warnings for {selectedScope === 'household' ? 'Household' : `${selectedScope} Personal`}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
             {budgetAlerts.map(alert => (
@@ -389,15 +514,15 @@ export const HouseholdDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Recent Activity */}
+      {/* Recent Transactions (Filtered by scope) */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-              Recent Transactions
+              {selectedScope === 'household' ? 'Household Recent Transactions' : `${selectedScope}'s Personal Transactions`}
             </h3>
             <p className="text-[11px] text-slate-400">
-              Audit trail showing creator tagging
+              {selectedScope === 'household' ? 'Showing both members and shared bills' : `Showing only ${selectedScope}'s personal purchases`}
             </p>
           </div>
           <button
@@ -410,7 +535,7 @@ export const HouseholdDashboard: React.FC = () => {
 
         {recentTransactions.length === 0 ? (
           <div className="text-center py-6 text-slate-400 text-xs">
-            No transactions found for {monthName}.
+            No personal transactions found for {selectedScope} in {monthName}.
           </div>
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800/80">

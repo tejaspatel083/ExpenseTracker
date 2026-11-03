@@ -12,11 +12,16 @@ import {
 } from 'lucide-react';
 
 export const AnalyticsView: React.FC = () => {
-  const { transactions, selectedMonth } = useFinance();
+  const { transactions, selectedMonth, selectedScope } = useFinance();
   const [dateRange, setDateRange] = useState<'thisMonth' | '3months' | '6months' | 'thisYear'>('6months');
 
   const filteredTx = useMemo(() => {
     return transactions.filter(t => {
+      // Scope filter: Household shows all + shared; Tejas/Hetvi show only personal
+      if (selectedScope !== 'household' && t.paidBy !== selectedScope) {
+        return false;
+      }
+
       if (dateRange === 'thisMonth') {
         return t.date.startsWith(selectedMonth);
       } else if (dateRange === '3months') {
@@ -27,7 +32,7 @@ export const AnalyticsView: React.FC = () => {
         return t.date.startsWith('2026');
       }
     });
-  }, [transactions, dateRange, selectedMonth]);
+  }, [transactions, dateRange, selectedMonth, selectedScope]);
 
   // 1. Spending by Category
   const categorySpending = useMemo(() => {
