@@ -216,3 +216,4 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     </div>
   );
 };
+

@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { useAuth } from '../../context/AuthContext';
-import { UserProfileName, CategoryNature } from '../../types';
-import { X, Plus, Trash2, DollarSign, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UserProfileName, CategoryNature, PaycheckEntry } from '../../types';
+import { formatPaydayLabel } from '../../utils/paycheckCalculator';
+import {
+  X,
+  Plus,
+  Trash2,
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Sparkles
+} from 'lucide-react';
 
 interface MonthlySetupModalProps {
   isOpen: boolean;
@@ -15,14 +27,27 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
   onClose,
   targetUser
 }) => {
-  const { selectedMonth, selectedScope, monthlyIncomes, allocations, setMonthlyIncome, updateAllocations } = useFinance();
-  const { currentUser } = useAuth();
+  const {
+    selectedMonth,
+    selectedScope,
+    monthlyIncomes,
+    allocations,
+    setMonthlyIncome,
+    updateAllocations,
+    getPaychecksForMonth,
+    savePaychecks
+  } = useFinance();
 
   const userToEdit: UserProfileName = targetUser || (selectedScope === 'Hetvi' ? 'Hetvi' : 'Tejas');
 
-  // Find existing income for this user & month
-  const existingIncome = monthlyIncomes.find(i => i.month === selectedMonth && i.user === userToEdit)?.income || (userToEdit === 'Tejas' ? 4000 : 3000);
+  // Existing income for this user & month
+  const existingIncome =
+    monthlyIncomes.find(i => i.month === selectedMonth && i.user === userToEdit)?.income ||
+    (userToEdit === 'Tejas' ? 4151.14 : 4253.62);
+
   const [incomeStr, setIncomeStr] = useState(existingIncome.toString());
+  const [showPaycheckBreakdown, setShowPaycheckBreakdown] = useState(false);
+  const [userPaychecks, setUserPaychecks] = useState<PaycheckEntry[]>([]);
 
   // Existing allocations for this user & month
   const existingAllocs = allocations.filter(a => a.month === selectedMonth && a.user === userToEdit);
@@ -35,7 +60,7 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
         nature: a.nature
       }));
     }
-    // Default allocations matching user prompt
+    // Default allocations
     if (userToEdit === 'Tejas') {
       return [
         { category: 'Personal', plannedAmount: '325', nature: 'expense' },
@@ -58,27 +83,46 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
   const [newCatNature, setNewCatNature] = useState<CategoryNature>('expense');
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (existingAllocs.length > 0) {
-      setCategories(existingAllocs.map(a => ({
-        category: a.category,
-        plannedAmount: a.plannedAmount.toString(),
-        nature: a.nature
-      })));
+      setCategories(
+        existingAllocs.map(a => ({
+          category: a.category,
+          plannedAmount: a.plannedAmount.toString(),
+          nature: a.nature
+        }))
+      );
     }
     setIncomeStr(existingIncome.toString());
+
+    // Load paychecks for this month
+    const loaded = getPaychecksForMonth(selectedMonth, userToEdit);
+    setUserPaychecks(loaded);
   }, [selectedMonth, userToEdit, isOpen]);
 
   if (!isOpen) return null;
 
   const totalAllocated = categories.reduce((sum, c) => sum + (parseFloat(c.plannedAmount) || 0), 0);
   const incomeNum = parseFloat(incomeStr) || 0;
-  const difference = incomeNum - totalAllocated;
+  const difference = Math.round((incomeNum - totalAllocated) * 100) / 100;
+
+  const handleUpdatePaycheck = (id: string, newAmt: string) => {
+    const val = parseFloat(newAmt) || 0;
+    const updated = userPaychecks.map(p => (p.id === id ? { ...p, amount: val } : p));
+    setUserPaychecks(updated);
+    const sum = updated.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    setIncomeStr(sum.toFixed(2));
+  };
 
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) return;
     const amt = parseFloat(newCatAmount) || 0;
-    setCategories(prev => [...prev, { category: newCatName.trim(), plannedAmount: amt.toString(), nature: newCatNature }]);
+    setCategories(prev => [
+      ...prev,
+      { category: newCatName.trim(), plannedAmount: amt.toString(), nature: newCatNature }
+    ]);
     setNewCatName('');
     setNewCatAmount('');
   };
@@ -88,11 +132,17 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
   };
 
   const handleUpdateAmount = (idx: number, val: string) => {
-    setCategories(prev => prev.map((item, i) => i === idx ? { ...item, plannedAmount: val } : item));
+    setCategories(prev => prev.map((item, i) => (i === idx ? { ...item, plannedAmount: val } : item)));
   };
 
   const handleSaveAll = async () => {
-    await setMonthlyIncome(selectedMonth, userToEdit, incomeNum);
+    // Save paychecks if customized
+    if (userPaychecks.length > 0) {
+      await savePaychecks(selectedMonth, userToEdit, userPaychecks);
+    } else {
+      await setMonthlyIncome(selectedMonth, userToEdit, incomeNum);
+    }
+
     await updateAllocations(
       selectedMonth,
       userToEdit,
@@ -123,7 +173,7 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
               Set monthly income and allocate budget categories.
             </p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -131,24 +181,67 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
         {/* Scrollable Content */}
         <div className="space-y-4 py-4 overflow-y-auto flex-1">
           
-          {/* Monthly Income input */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Monthly Income (CAD $) *
-            </label>
+          {/* Monthly Income input + Bi-weekly Thursday Schedule toggle */}
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Monthly Income (CAD $) *
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowPaycheckBreakdown(!showPaycheckBreakdown)}
+                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              >
+                <Clock className="w-3 h-3" />
+                <span>{showPaycheckBreakdown ? 'Hide Thursdays' : 'Bi-Weekly Paychecks'}</span>
+                {showPaycheckBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+
             <div className="relative">
               <span className="absolute left-3.5 top-2.5 font-bold text-slate-400">$</span>
               <input
                 type="number"
-                inputMode="numeric"
+                step="0.01"
+                inputMode="decimal"
                 value={incomeStr}
                 onChange={(e) => setIncomeStr(e.target.value)}
-                placeholder="4000"
+                placeholder="4151.14"
                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-base font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Example: $4,000 to be allocated below
+
+            {/* Expandable Bi-weekly Thursday Paychecks */}
+            {showPaycheckBreakdown && (
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-2 animate-in fade-in duration-100">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Every 2nd Thursday Paydays ({userPaychecks.length})
+                </span>
+                {userPaychecks.map((p, idx) => (
+                  <div key={p.id} className="flex items-center justify-between text-xs gap-2">
+                    <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
+                      {p.label}:
+                    </span>
+                    <div className="relative w-28 shrink-0">
+                      <span className="absolute left-2 top-1 text-slate-400 font-bold">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={p.amount || ''}
+                        onChange={(e) => handleUpdatePaycheck(p.id, e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-5 pr-1.5 py-0.5 text-xs font-mono font-bold text-right"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <span className="text-[10px] text-slate-400 block pt-1 border-t border-slate-100 dark:border-slate-800">
+                  Editing any paycheck automatically recalibrates total monthly income.
+                </span>
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-400">
+              Total expected inflow for the month across bi-weekly Thursdays.
             </p>
           </div>
 
@@ -173,13 +266,15 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
                     <span className="font-bold text-slate-900 dark:text-white truncate">
                       {item.category}
                     </span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
-                      item.nature === 'investment'
-                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                        : item.nature === 'savings'
-                        ? 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300'
-                        : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                    }`}>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                        item.nature === 'investment'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+                          : item.nature === 'savings'
+                          ? 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300'
+                          : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                      }`}
+                    >
                       {item.nature}
                     </span>
                   </div>
@@ -209,14 +304,22 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
             </div>
 
             {/* Difference / Balance check */}
-            <div className={`mt-2 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between ${
-              difference === 0
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                : difference > 0
-                ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
-                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-            }`}>
-              <span>{difference === 0 ? '✓ 100% of income allocated' : difference > 0 ? `${fmt(difference)} unallocated money` : `⚠️ Over-allocated by ${fmt(Math.abs(difference))}`}</span>
+            <div
+              className={`mt-2 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between ${
+                difference === 0
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                  : difference > 0
+                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
+                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+              }`}
+            >
+              <span>
+                {difference === 0
+                  ? '✓ 100% of income allocated'
+                  : difference > 0
+                  ? `${fmt(difference)} unallocated money`
+                  : `⚠️ Over-allocated by ${fmt(Math.abs(difference))}`}
+              </span>
               <span className="font-mono font-bold">{fmt(totalAllocated)}</span>
             </div>
           </div>
@@ -267,7 +370,7 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100"
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             Cancel
           </button>

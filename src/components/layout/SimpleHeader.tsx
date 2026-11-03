@@ -122,3 +122,4 @@ export const SimpleHeader: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

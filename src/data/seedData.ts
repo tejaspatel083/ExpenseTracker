@@ -1,24 +1,58 @@
-import { CategoryAllocation, MonthlyUserIncome, SimpleTransaction } from '../types';
+import { CategoryAllocation, MonthlyUserIncome, PaycheckEntry, SimpleTransaction, UserIncomeSettings, UserProfileName } from '../types';
 
-export const SEED_INCOMES: MonthlyUserIncome[] = [
+export const DEFAULT_INCOME_SETTINGS: Record<UserProfileName, UserIncomeSettings> = {
+  Tejas: {
+    user: 'Tejas',
+    payFrequency: 'biweekly-thursday',
+    anchorThursday: '2026-11-05',
+    defaultPaycheckAmount: 2075.57
+  },
+  Hetvi: {
+    user: 'Hetvi',
+    payFrequency: 'biweekly-thursday',
+    anchorThursday: '2026-11-12',
+    defaultPaycheckAmount: 2126.81
+  }
+};
+
+export const SEED_PAYCHECKS: PaycheckEntry[] = [
   // November 2026
-  { month: '2026-11', user: 'Tejas', income: 4000 },
-  { month: '2026-11', user: 'Hetvi', income: 3000 },
+  { id: 'pay-t-2026-11-1', month: '2026-11', user: 'Tejas', date: '2026-11-05', label: 'Paycheck 1 (Thu, Nov 5)', amount: 2075.57 },
+  { id: 'pay-t-2026-11-2', month: '2026-11', user: 'Tejas', date: '2026-11-19', label: 'Paycheck 2 (Thu, Nov 19)', amount: 2075.57 },
+  { id: 'pay-h-2026-11-1', month: '2026-11', user: 'Hetvi', date: '2026-11-12', label: 'Paycheck 1 (Thu, Nov 12)', amount: 2126.81 },
+  { id: 'pay-h-2026-11-2', month: '2026-11', user: 'Hetvi', date: '2026-11-26', label: 'Paycheck 2 (Thu, Nov 26)', amount: 2126.81 },
 
   // October 2026
-  { month: '2026-10', user: 'Tejas', income: 2075.57 },
-  { month: '2026-10', user: 'Hetvi', income: 2126.81 },
+  { id: 'pay-t-2026-10-1', month: '2026-10', user: 'Tejas', date: '2026-10-08', label: 'Paycheck 1 (Thu, Oct 8)', amount: 2075.57 },
+  { id: 'pay-t-2026-10-2', month: '2026-10', user: 'Tejas', date: '2026-10-22', label: 'Paycheck 2 (Thu, Oct 22)', amount: 2075.57 },
+  { id: 'pay-h-2026-10-1', month: '2026-10', user: 'Hetvi', date: '2026-10-15', label: 'Paycheck 1 (Thu, Oct 15)', amount: 2126.81 },
+  { id: 'pay-h-2026-10-2', month: '2026-10', user: 'Hetvi', date: '2026-10-29', label: 'Paycheck 2 (Thu, Oct 29)', amount: 2126.81 },
 
   // September 2026
-  { month: '2026-09', user: 'Tejas', income: 2075.57 },
+  { id: 'pay-t-2026-09-1', month: '2026-09', user: 'Tejas', date: '2026-09-10', label: 'Paycheck 1 (Thu, Sep 10)', amount: 2075.57 },
+  { id: 'pay-t-2026-09-2', month: '2026-09', user: 'Tejas', date: '2026-09-24', label: 'Paycheck 2 (Thu, Sep 24)', amount: 2075.57 },
+  { id: 'pay-h-2026-09-1', month: '2026-09', user: 'Hetvi', date: '2026-09-17', label: 'Paycheck 1 (Thu, Sep 17)', amount: 2075.00 }
+];
+
+export const SEED_INCOMES: MonthlyUserIncome[] = [
+  // November 2026 (calculated as 2 paychecks of $2,075.57 = $4,151.14 for Tejas)
+  { month: '2026-11', user: 'Tejas', income: 4151.14 },
+  { month: '2026-11', user: 'Hetvi', income: 4253.62 },
+
+  // October 2026
+  { month: '2026-10', user: 'Tejas', income: 4151.14 },
+  { month: '2026-10', user: 'Hetvi', income: 4253.62 },
+
+  // September 2026
+  { month: '2026-09', user: 'Tejas', income: 4151.14 },
   { month: '2026-09', user: 'Hetvi', income: 2075.00 },
 
   // August 2026
   { month: '2026-08', user: 'Tejas', income: 2075.57 },
   { month: '2026-08', user: 'Hetvi', income: 2001.24 },
 
-  // July 2026
-  { month: '2026-07', user: 'Tejas', income: 2075.57 },
+  // July 2026 (3 paychecks in July!)
+  { month: '2026-07', user: 'Tejas', income: 6226.71 },
   { month: '2026-07', user: 'Hetvi', income: 2301.24 },
 
   // June 2026

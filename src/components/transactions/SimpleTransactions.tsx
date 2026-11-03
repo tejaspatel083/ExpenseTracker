@@ -215,3 +215,4 @@ export const SimpleTransactions: React.FC<SimpleTransactionsProps> = ({
     </div>
   );
 };
+

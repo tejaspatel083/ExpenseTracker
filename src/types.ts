@@ -27,6 +27,22 @@ export interface MonthlyUserIncome {
   income: number;
 }
 
+export interface PaycheckEntry {
+  id: string;
+  month: string; // YYYY-MM
+  user: UserProfileName;
+  date: string; // YYYY-MM-DD
+  label: string; // e.g. "Paycheck 1 (Thu, Nov 5)"
+  amount: number;
+}
+
+export interface UserIncomeSettings {
+  user: UserProfileName;
+  payFrequency: 'biweekly-thursday' | 'monthly' | 'custom';
+  anchorThursday: string; // e.g. '2026-11-05'
+  defaultPaycheckAmount: number;
+}
+
 export interface SimpleTransaction {
   id: string;
   date: string; // YYYY-MM-DD

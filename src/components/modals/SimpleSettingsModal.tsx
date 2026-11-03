@@ -141,3 +141,4 @@ export const SimpleSettingsModal: React.FC<SimpleSettingsModalProps> = ({
     </div>
   );
 };
+

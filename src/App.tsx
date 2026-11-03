@@ -9,6 +9,7 @@ import { SimpleTransactions } from './components/transactions/SimpleTransactions
 import { SimpleMonthlySummary } from './components/summary/SimpleMonthlySummary';
 import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { MonthlySetupModal } from './components/modals/MonthlySetupModal';
+import { EditIncomeModal } from './components/modals/EditIncomeModal';
 import { SimpleSettingsModal } from './components/modals/SimpleSettingsModal';
 import { Heart, ShieldCheck } from 'lucide-react';
 
@@ -22,6 +23,7 @@ const MainApplication: React.FC<{
   // Modals state
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isMonthlySetupOpen, setIsMonthlySetupOpen] = useState(false);
+  const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   if (isLoading) {
@@ -60,6 +62,7 @@ const MainApplication: React.FC<{
           <SimpleDashboard
             onOpenAddExpense={() => setIsAddExpenseOpen(true)}
             onOpenMonthlySetup={() => setIsMonthlySetupOpen(true)}
+            onOpenEditIncome={() => setIsEditIncomeOpen(true)}
           />
         )}
 
@@ -101,6 +104,13 @@ const MainApplication: React.FC<{
         <MonthlySetupModal
           isOpen={isMonthlySetupOpen}
           onClose={() => setIsMonthlySetupOpen(false)}
+        />
+      )}
+
+      {isEditIncomeOpen && (
+        <EditIncomeModal
+          isOpen={isEditIncomeOpen}
+          onClose={() => setIsEditIncomeOpen(false)}
         />
       )}
 
