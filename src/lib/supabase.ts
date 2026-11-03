@@ -4,8 +4,8 @@ const STORAGE_KEY_URL = 'household_supabase_url';
 const STORAGE_KEY_KEY = 'household_supabase_anon_key';
 
 // Pre-configured default Supabase cloud database for Tejas & Hetvi household
-const DEFAULT_SUPABASE_URL = 'https://zuctnfowdpndgumumrnx.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1Y3RuZm93ZHBuZGd1bXVtcm54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MjYxNzEsImV4cCI6MjEwNjAwMjE3MX0.SAAVDWVf9pgLdFLrQOgoF6AueQRMS8bMwJeUXTpz8SA';
+const DEFAULT_SUPABASE_URL = 'https://wtxicjsmzzhputdxsere.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0eGljanNtenpocHV0ZHhzZXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2NjE0NTcsImV4cCI6MjEwOTIzNzQ1N30.vXF66IodkXm47czzas_pJdwBf9W-6iigztrJlIQimCc';
 
 /**
  * Normalizes user input into a valid Supabase project URL (https://xyz.supabase.co)
@@ -33,15 +33,13 @@ export function cleanSupabaseUrl(input: string): string {
 }
 
 export const getSupabaseConfig = () => {
-  // Proactively clear any stale/corrupted credentials in localStorage from prior tests on mobile
+  // Proactively clear any stale/corrupted credentials and sessions from old Supabase project
   try {
-    const localUrl = localStorage.getItem(STORAGE_KEY_URL);
-    const localKey = localStorage.getItem(STORAGE_KEY_KEY);
-    if (localUrl && localUrl !== DEFAULT_SUPABASE_URL) {
-      localStorage.removeItem(STORAGE_KEY_URL);
-    }
-    if (localKey && localKey !== DEFAULT_SUPABASE_ANON_KEY) {
-      localStorage.removeItem(STORAGE_KEY_KEY);
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.includes('zuctnfowdpndgumumrnx') || k === STORAGE_KEY_URL || k === STORAGE_KEY_KEY)) {
+        localStorage.removeItem(k);
+      }
     }
   } catch {}
 
