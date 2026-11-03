@@ -1,128 +1,79 @@
 export type UserProfileName = 'Tejas' | 'Hetvi';
-
 export type UserViewScope = 'household' | 'Tejas' | 'Hetvi';
 
-export type PayFrequency = 'weekly' | 'biweekly' | 'twice_monthly' | 'monthly';
-
-export type TransactionType = 'expense' | 'income';
-
-export type PaidBy = 'Tejas' | 'Hetvi' | 'Shared';
-
-export type GoalOwner = 'household' | 'Tejas' | 'Hetvi';
-
-export type BudgetScope = 'household' | 'Tejas' | 'Hetvi';
-
 export interface UserProfile {
-  id: string;
+  id?: string;
   name: UserProfileName;
   email: string;
-  avatarBg: string;
   avatarColor: string;
-  role: string;
+  avatarBg: string;
+  role?: string;
 }
 
-export interface IncomeSetting {
+export type CategoryNature = 'expense' | 'investment' | 'savings';
+
+export interface CategoryAllocation {
   id: string;
-  userName: UserProfileName;
-  type: 'salary' | 'bonus' | 'freelance' | 'other';
-  title: string;
-  annualSalary: number;
-  payFrequency: PayFrequency;
-  nextPayday: string; // YYYY-MM-DD
-  employer: string;
-  bonusAmount?: number;
-  notes?: string;
-  isActive: boolean;
+  month: string; // YYYY-MM
+  user: UserProfileName;
+  category: string;
+  plannedAmount: number;
+  nature: CategoryNature;
 }
 
-export interface Transaction {
+export interface MonthlyUserIncome {
+  month: string; // YYYY-MM
+  user: UserProfileName;
+  income: number;
+}
+
+export interface SimpleTransaction {
   id: string;
   date: string; // YYYY-MM-DD
   description: string;
   category: string;
   amount: number;
-  type: TransactionType;
-  paidBy: PaidBy;
-  paymentMethod: string;
-  isRecurring: boolean;
-  createdBy: UserProfileName;
-  notes?: string;
-  createdAt?: string;
+  user: UserProfileName;
 }
 
-export interface Budget {
-  id: string;
-  month: string; // YYYY-MM or 'all'
-  category: string;
-  amount: number;
-  scope: BudgetScope;
+export interface MonthSummaryStats {
+  month: string;
+  income: number;
+  allocated: number;
+  actualExpenses: number;
+  actualInvestments: number;
+  plannedSavings: number;
+  actualSavings: number;
+  remainingBudget: number;
+  savingsRate: number;
 }
 
-export interface RecurringExpense {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  paidBy: PaidBy;
-  frequency: 'monthly' | 'biweekly' | 'weekly' | 'annual';
-  nextPaymentDate: string; // YYYY-MM-DD
-  isActive: boolean;
-  isEssential?: boolean; // like Rogers, Bell, Hydro, Rent
-}
-
-export interface SavingsGoal {
-  id: string;
-  title: string;
-  targetAmount: number;
-  currentAmount: number;
-  targetDate: string; // YYYY-MM-DD
-  owner: GoalOwner;
-  category: string;
-  notes?: string;
-}
-
-export interface MonthlySummary {
-  month: string; // YYYY-MM
-  householdIncome: number;
-  householdExpenses: number;
-  available: number;
+export interface MonthlyHistoryRow {
+  month: string;
+  monthLabel: string;
+  income: number;
+  expenses: number;
+  investment: number;
   savings: number;
-  tejasIncome: number;
-  hetviIncome: number;
-  tejasExpenses: number;
-  hetviExpenses: number;
-  sharedExpenses: number;
+  savingsRate: number;
+  plannedSavings: number;
 }
 
-export interface SupabaseConfig {
-  url: string;
-  anonKey: string;
-  isConfigured: boolean;
+export interface CategoryStatus {
+  category: string;
+  planned: number;
+  spent: number;
+  remaining: number;
+  percentage: number;
+  isOverBudget: boolean;
+  overAmount: number;
+  nature: CategoryNature;
 }
 
-export const DEFAULT_EXPENSE_CATEGORIES = [
-  'Rent/Mortgage',
-  'Utilities',
-  'Groceries',
-  'Dining',
-  'Transportation',
-  'Gas',
-  'Shopping',
-  'Entertainment',
-  'Insurance',
-  'Healthcare',
-  'Subscriptions',
-  'Travel',
-  'Personal',
-  'Education',
-  'Other'
+export const DEFAULT_CATEGORIES: { name: string; nature: CategoryNature; defaultPlanned: Record<UserProfileName, number> }[] = [
+  { name: 'Bills', nature: 'expense', defaultPlanned: { Tejas: 1175, Hetvi: 900 } },
+  { name: 'Personal', nature: 'expense', defaultPlanned: { Tejas: 325, Hetvi: 325 } },
+  { name: 'Food', nature: 'expense', defaultPlanned: { Tejas: 500, Hetvi: 400 } },
+  { name: 'Investment', nature: 'investment', defaultPlanned: { Tejas: 1000, Hetvi: 600 } },
+  { name: 'Savings', nature: 'savings', defaultPlanned: { Tejas: 1000, Hetvi: 775 } }
 ];
-
-export const PAYMENT_METHODS = [
-  'Credit Card',
-  'Debit / Bank Account',
-  'E-Transfer',
-  'Cash',
-  'Other'
-];
-
