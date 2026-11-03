@@ -5,20 +5,15 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  AlertCircle,
-  Settings,
-  Database,
-  CheckCircle2
+  AlertCircle
 } from 'lucide-react';
-import { SimpleSettingsModal } from '../modals/SimpleSettingsModal';
 
 export const LoginPage: React.FC = () => {
-  const { loginWithSupabase, isSupabaseConnected } = useAuth();
+  const { loginWithSupabase } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,61 +57,13 @@ export const LoginPage: React.FC = () => {
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 via-teal-400 to-pink-500" />
 
-          {/* Card Header & Settings Button */}
-          <div className="flex items-center justify-between mb-5 sm:mb-6">
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-white">Sign In</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Authentication required to access records.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 text-xs font-bold"
-              title="Configure Supabase Database URL & Key"
-            >
-              <Settings className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">DB Settings</span>
-            </button>
+          {/* Card Header */}
+          <div className="mb-5 sm:mb-6">
+            <h2 className="text-base sm:text-lg font-semibold text-white">Sign In</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Authentication required to access records.
+            </p>
           </div>
-
-          {/* Connection Status Banner */}
-          {!isSupabaseConnected ? (
-            <div className="mb-4 p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start justify-between gap-2 text-xs text-amber-200">
-              <div className="flex items-start gap-2">
-                <Database className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Database not connected.</span>
-                  <p className="text-[11px] text-amber-300/80 mt-0.5">
-                    Click settings to connect your private database.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] shrink-0"
-              >
-                Configure
-              </button>
-            </div>
-          ) : (
-            <div className="mb-4 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-xs text-emerald-300">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-semibold">Cloud Database Connected</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="text-[11px] text-emerald-400 hover:underline font-bold"
-              >
-                Change
-              </button>
-            </div>
-          )}
 
           {/* Error Message Box */}
           {errorMessage && (
@@ -169,7 +116,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-medium py-3 px-4 rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-medium py-3 px-4 rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -193,14 +140,6 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
-
-      {/* Cloud Settings Modal */}
-      {isSettingsOpen && (
-        <SimpleSettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-      )}
     </div>
   );
 };
