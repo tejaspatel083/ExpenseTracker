@@ -55,23 +55,29 @@ const checkHasStoredSession = (): boolean => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    try {
+      const demoUser = localStorage.getItem('household_demo_user');
+      if (demoUser === 'Tejas' || demoUser === 'Hetvi') {
+        const meta = ALLOWED_USERS[demoUser as UserProfileName];
+        return {
+          id: demoUser.toLowerCase(),
+          name: demoUser as UserProfileName,
+          email: `${demoUser.toLowerCase()}@household.local`,
+          avatarBg: meta.avatarBg,
+          avatarColor: meta.avatarColor,
+          role: meta.role
+        };
+      }
+    } catch {}
+    return null;
+  });
   const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(checkHasStoredSession);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
-
-    const checkLocalSession = () => {
-      const demoUser = localStorage.getItem('household_demo_user');
-      if (demoUser && (demoUser === 'Tejas' || demoUser === 'Hetvi')) {
-        setCurrentUser(createProfileObject(demoUser as UserProfileName, 'demo@household.local'));
-      }
-      if (isMounted) {
-        setIsLoading(false);
-      }
-    };
 
     const initAuth = async () => {
       const { isConfigured } = getSupabaseConfig();
@@ -80,10 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const supabase = getSupabase();
       if (isConfigured && supabase) {
         try {
-          // Fast 1.2s timeout race ensures the app never hangs on a loading screen
           const sessionPromise = supabase.auth.getSession();
           const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null }, error: null }), 1200)
+            setTimeout(() => resolve({ data: { session: null }, error: null }), 1500)
           );
 
           const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
@@ -91,9 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           if (session?.user) {
             setSupabaseUser(session.user);
-            await resolveUserProfile(session.user);
-          } else {
-            checkLocalSession();
+            resolveUserProfile(session.user);
           }
 
           const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -119,12 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         } catch (err) {
           console.error('Supabase auth init error:', err);
-          if (isMounted) checkLocalSession();
         }
-      } else {
-        if (isMounted) checkLocalSession();
       }
-      if (isMounted) setIsLoading(false);
     };
 
     initAuth();
@@ -204,10 +203,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const authPromise = supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password
       });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timed out. Please enter using Household Passcode (1234).')), 5000)
+      );
+
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]);
 
       if (error) {
         const msg = error.message.toLowerCase();
@@ -253,13 +258,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const detectedName: UserProfileName =
         (emailTrim.toLowerCase().includes('hetvi') || emailTrim.toLowerCase().includes('honey')) ? 'Hetvi' : 'Tejas';
 
-      const { data, error } = await supabase.auth.signUp({
+      const authPromise = supabase.auth.signUp({
         email: emailTrim,
         password: password,
         options: {
           data: { name: detectedName }
         }
       });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Sign up timed out. Please enter using Household Passcode (1234).')), 5000)
+      );
+
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]);
 
       if (error) {
         return { success: false, error: error.message };
