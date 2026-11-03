@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Lock, Mail, Users, ArrowRight, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Shield,
+  Lock,
+  Mail,
+  Users,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  Settings,
+  Database,
+  ExternalLink
+} from 'lucide-react';
 import { UserProfileName } from '../../types';
+import { SimpleSettingsModal } from '../modals/SimpleSettingsModal';
 
 export const LoginPage: React.FC = () => {
   const { loginWithSupabase, loginAsDemo, isSupabaseConnected } = useAuth();
@@ -9,13 +22,14 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (!email || !password) {
-      setErrorMessage('Please enter both email and password.');
+      setErrorMessage('Please enter both your email address and password.');
       return;
     }
 
@@ -56,17 +70,70 @@ export const LoginPage: React.FC = () => {
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 via-teal-400 to-pink-500" />
 
-          <div className="mb-5 sm:mb-6">
-            <h2 className="text-base sm:text-lg font-semibold text-white">Household Sign In</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Strictly restricted to registered household members.
-            </p>
+          {/* Card Header & Settings Button */}
+          <div className="flex items-center justify-between mb-5 sm:mb-6">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold text-white">Household Sign In</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Strictly restricted to Tejas & Hetvi.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 text-xs font-bold"
+              title="Configure Supabase Database URL & Key"
+            >
+              <Settings className="w-4 h-4 text-emerald-400" />
+              <span className="hidden sm:inline">DB Settings</span>
+            </button>
           </div>
 
+          {/* Connection Status Banner */}
+          {!isSupabaseConnected ? (
+            <div className="mb-4 p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start justify-between gap-2 text-xs text-amber-200">
+              <div className="flex items-start gap-2">
+                <Database className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Supabase Cloud not connected yet.</span>
+                  <p className="text-[11px] text-amber-300/80 mt-0.5">
+                    Click settings to paste your Supabase Project URL & Anon Key.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] shrink-0"
+              >
+                Configure
+              </button>
+            </div>
+          ) : (
+            <div className="mb-4 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-xs text-emerald-300">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="font-semibold">Supabase Cloud Connected</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="text-[11px] text-emerald-400 hover:underline font-bold"
+              >
+                Change
+              </button>
+            </div>
+          )}
+
+          {/* Error Message Box */}
           {errorMessage && (
-            <div className="mb-4 sm:mb-5 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-start gap-2.5 text-rose-300 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
+            <div className="mb-4 sm:mb-5 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-start gap-2.5 text-rose-300 text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+              <div className="space-y-1">
+                <span className="font-bold block text-rose-200">Sign In Issue:</span>
+                <span className="leading-relaxed block">{errorMessage}</span>
+              </div>
             </div>
           )}
 
@@ -128,10 +195,10 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5" />
-                Select Profile
+                Quick Access
               </span>
               <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Ready
+                <Sparkles className="w-3 h-3" /> Local Ledger
               </span>
             </div>
 
@@ -149,7 +216,7 @@ export const LoginPage: React.FC = () => {
                     Tejas
                   </div>
                   <div className="text-[10px] text-slate-400 truncate">
-                    Co-Head
+                    Tap to enter
                   </div>
                 </div>
               </button>
@@ -167,25 +234,26 @@ export const LoginPage: React.FC = () => {
                     Hetvi
                   </div>
                   <div className="text-[10px] text-slate-400 truncate">
-                    Co-Head
+                    Tap to enter
                   </div>
                 </div>
               </button>
-            </div>
-
-            <div className="mt-3.5 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>
-                {isSupabaseConnected ? 'Connected to Supabase' : 'Preview Mode Active'}
-              </span>
             </div>
           </div>
         </div>
 
         <p className="text-center text-xs text-slate-500 mt-5">
-          Encrypted private ledger. Public registration disabled.
+          Encrypted private household ledger. Public registration disabled.
         </p>
       </div>
+
+      {/* Cloud Settings Modal */}
+      {isSettingsOpen && (
+        <SimpleSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
     </div>
   );
 };

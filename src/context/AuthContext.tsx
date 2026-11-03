@@ -53,19 +53,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             setSupabaseUser(session.user);
-            resolveUserProfile(session.user);
+            await resolveUserProfile(session.user);
           } else {
-            // Check local preview session if any
             checkLocalSession();
           }
 
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             if (session?.user) {
               setSupabaseUser(session.user);
-              resolveUserProfile(session.user);
+              await resolveUserProfile(session.user);
             } else {
               setSupabaseUser(null);
-              // don't clear demo if in demo mode
               const demoUser = localStorage.getItem('household_demo_user');
               if (demoUser && (demoUser === 'Tejas' || demoUser === 'Hetvi')) {
                 setCurrentUser(createProfileObject(demoUser as UserProfileName, 'demo@household.local'));
@@ -115,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const emailLower = (user.email || '').toLowerCase();
     let detectedName: UserProfileName = 'Tejas';
 
-    // Check metadata or email
+    // 1. Check metadata
     const metaName = user.user_metadata?.name;
     if (metaName === 'Tejas' || metaName === 'Hetvi') {
       detectedName = metaName;
@@ -125,13 +123,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       detectedName = 'Tejas';
     }
 
+    // 2. Query or upsert to Supabase profiles table
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.name && (profile.name === 'Tejas' || profile.name === 'Hetvi')) {
+          detectedName = profile.name;
+        } else {
+          // If no row in profiles, automatically insert it for this authenticated user
+          await supabase.from('profiles').upsert({
+            id: user.id,
+            email: user.email || '',
+            name: detectedName
+          });
+        }
+      } catch (e) {
+        console.warn('Could not query/upsert profiles table:', e);
+      }
+    }
+
     setCurrentUser(createProfileObject(detectedName, user.email || ''));
   };
 
   const loginWithSupabase = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const supabase = getSupabase();
     if (!supabase) {
-      return { success: false, error: 'Supabase credentials not configured yet. Please configure in settings or test using Quick Access.' };
+      return {
+        success: false,
+        error: 'Supabase URL and API Key are not configured yet. Click the gear icon at the top right to configure your connection.'
+      };
     }
 
     try {
@@ -141,6 +167,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes('email not confirmed')) {
+          return {
+            success: false,
+            error: 'Email not confirmed yet. In your Supabase Dashboard -> Authentication -> Users, click your email and select "Confirm email", or disable "Confirm email" in Auth settings.'
+          };
+        }
+        if (msg.includes('invalid login credentials') || msg.includes('invalid_grant')) {
+          return {
+            success: false,
+            error: 'Invalid login credentials. Please verify your email and password. Note: The account must be created under Supabase Dashboard -> Authentication -> Users (not just in the database table).'
+          };
+        }
         return { success: false, error: error.message };
       }
 
@@ -167,8 +206,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (supabase) {
       try {
         await supabase.auth.signOut();
-      } catch (err) {
-        console.error('Error signing out:', err);
+      } catch (e) {
+        console.error('Logout error:', e);
       }
     }
     localStorage.removeItem('household_demo_user');
@@ -178,10 +217,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfileName = (name: UserProfileName) => {
     if (currentUser) {
-      setCurrentUser(createProfileObject(name, currentUser.email));
-      if (!supabaseUser) {
-        localStorage.setItem('household_demo_user', name);
-      }
+      const updated = createProfileObject(name, currentUser.email);
+      setCurrentUser(updated);
+      localStorage.setItem('household_demo_user', name);
     }
   };
 
@@ -189,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         currentUser,
-        isAuthenticated: !!currentUser,
+        isAuthenticated: Boolean(currentUser),
         isLoading,
         supabaseUser,
         isSupabaseConnected,
@@ -211,4 +249,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
