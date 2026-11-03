@@ -202,13 +202,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const authPromise = supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password: password
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timed out. Please enter using Household Passcode (1234).')), 5000)
+        setTimeout(() => reject(new Error('Connection timed out. Please check your network and try again.')), 8000)
       );
 
       const { data, error } = await Promise.race([authPromise, timeoutPromise]);
@@ -218,13 +219,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (msg.includes('email not confirmed')) {
           return {
             success: false,
-            error: 'Email not confirmed yet. In your Supabase Dashboard -> Authentication -> Users, click your email and select "Confirm email", or disable "Confirm email" in Auth settings.'
+            error: 'Email not confirmed yet. Please verify your email or confirm it in your Supabase Dashboard.'
           };
         }
         if (msg.includes('invalid login credentials') || msg.includes('invalid_grant')) {
           return {
             success: false,
-            error: 'Invalid login credentials. Please verify your email and password. Note: The account must be created under Supabase Dashboard -> Authentication -> Users (not just in the database table).'
+            error: 'Invalid login credentials. Please verify your email address and password.'
           };
         }
         return { success: false, error: error.message };

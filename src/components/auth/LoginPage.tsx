@@ -6,54 +6,38 @@ import {
   Mail,
   ArrowRight,
   AlertCircle,
-  CheckCircle2
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { loginWithSupabase, signUpWithSupabase } = useAuth();
+  const { loginWithSupabase } = useAuth();
   
-  const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setSuccessNotice(null);
 
-    if (!email || !password) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       setErrorMessage('Please enter both your email address and password.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters long.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      if (emailMode === 'signup') {
-        const result = await signUpWithSupabase(email, password);
-        setIsSubmitting(false);
+      const result = await loginWithSupabase(cleanEmail, password);
+      setIsSubmitting(false);
 
-        if (!result.success) {
-          setErrorMessage(result.error || 'Failed to create account.');
-        } else if (result.needConfirmation) {
-          setSuccessNotice('Account registered! A confirmation email has been sent. Please verify your email to complete sign in.');
-        }
-      } else {
-        const result = await loginWithSupabase(email, password);
-        setIsSubmitting(false);
-
-        if (!result.success) {
-          setErrorMessage(result.error || 'Authentication failed. Please check your email and password.');
-        }
+      if (!result.success) {
+        setErrorMessage(result.error || 'Authentication failed. Please check your credentials.');
       }
     } catch (err: any) {
       setIsSubmitting(false);
@@ -86,26 +70,13 @@ export const LoginPage: React.FC = () => {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 via-teal-400 to-pink-500" />
 
           {/* Card Header */}
-          <div className="flex items-center justify-between mb-5 sm:mb-6">
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-white">
-                {emailMode === 'signup' ? 'Create Account' : 'Sign In'}
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Authentication required to access records.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEmailMode(emailMode === 'signin' ? 'signup' : 'signin');
-                setErrorMessage(null);
-                setSuccessNotice(null);
-              }}
-              className="text-xs text-emerald-400 hover:text-emerald-300 font-medium hover:underline transition"
-            >
-              {emailMode === 'signin' ? 'New user? Sign up' : 'Have account? Sign in'}
-            </button>
+          <div className="mb-5 sm:mb-6">
+            <h2 className="text-base sm:text-lg font-semibold text-white">
+              Sign In
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Authentication required to access records.
+            </p>
           </div>
 
           {/* Error Message Box */}
@@ -116,14 +87,6 @@ export const LoginPage: React.FC = () => {
                 <span className="font-bold block text-rose-200">Access Denied:</span>
                 <span className="leading-relaxed block">{errorMessage}</span>
               </div>
-            </div>
-          )}
-
-          {/* Success Notice Box */}
-          {successNotice && (
-            <div className="mb-4 sm:mb-5 p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-start gap-2.5 text-emerald-300 text-xs">
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
-              <div className="leading-relaxed">{successNotice}</div>
             </div>
           )}
 
@@ -138,11 +101,13 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   inputMode="email"
                   autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="email"
+                  spellCheck={false}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email address"
                   className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  autoComplete="email"
                   required
                 />
               </div>
@@ -155,14 +120,29 @@ export const LoginPage: React.FC = () => {
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="current-password"
+                  spellCheck={false}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  autoComplete={emailMode === 'signup' ? 'new-password' : 'current-password'}
+                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 p-0.5 text-slate-400 hover:text-slate-200 transition"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -175,7 +155,7 @@ export const LoginPage: React.FC = () => {
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{emailMode === 'signup' ? 'Create Account' : 'Sign In'}</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

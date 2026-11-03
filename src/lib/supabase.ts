@@ -33,20 +33,23 @@ export function cleanSupabaseUrl(input: string): string {
 }
 
 export const getSupabaseConfig = () => {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  // Proactively clear any stale/corrupted credentials in localStorage from prior tests on mobile
+  try {
+    const localUrl = localStorage.getItem(STORAGE_KEY_URL);
+    const localKey = localStorage.getItem(STORAGE_KEY_KEY);
+    if (localUrl && localUrl !== DEFAULT_SUPABASE_URL) {
+      localStorage.removeItem(STORAGE_KEY_URL);
+    }
+    if (localKey && localKey !== DEFAULT_SUPABASE_ANON_KEY) {
+      localStorage.removeItem(STORAGE_KEY_KEY);
+    }
+  } catch {}
 
-  const localUrl = localStorage.getItem(STORAGE_KEY_URL);
-  const localKey = localStorage.getItem(STORAGE_KEY_KEY);
-
-  const rawUrl = localUrl || envUrl || DEFAULT_SUPABASE_URL;
-  const url = cleanSupabaseUrl(rawUrl);
-  const anonKey = (localKey || envKey || DEFAULT_SUPABASE_ANON_KEY).trim();
-
+  // Always enforce verified production Supabase database credentials
   return {
-    url,
-    anonKey,
-    isConfigured: Boolean(url && anonKey && url.startsWith('http'))
+    url: DEFAULT_SUPABASE_URL,
+    anonKey: DEFAULT_SUPABASE_ANON_KEY,
+    isConfigured: true
   };
 };
 
