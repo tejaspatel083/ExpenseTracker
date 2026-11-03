@@ -25,12 +25,27 @@ const MainApplication: React.FC<{
   const [isMonthlySetupOpen, setIsMonthlySetupOpen] = useState(false);
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showSlowNotice, setShowSlowNotice] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSlowNotice(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
         <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
         <p className="text-slate-400 text-sm font-medium">Loading household finances...</p>
+        {showSlowNotice && (
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition cursor-pointer"
+          >
+            Taking longer than expected? Tap to refresh
+          </button>
+        )}
       </div>
     );
   }

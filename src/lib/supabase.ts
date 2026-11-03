@@ -75,6 +75,10 @@ export const initSupabaseClient = (): SupabaseClient | null => {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
+          // Bypass browser Web Locks API to prevent mobile browser / Safari deadlocks
+          lock: async (_name, _acquireTimeout, fn) => {
+            return await fn();
+          }
         }
       });
       return supabaseInstance;

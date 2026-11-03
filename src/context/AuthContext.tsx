@@ -42,15 +42,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(false);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const checkLocalSession = () => {
+      const demoUser = localStorage.getItem('household_demo_user');
+      if (demoUser && (demoUser === 'Tejas' || demoUser === 'Hetvi')) {
+        setCurrentUser(createProfileObject(demoUser as UserProfileName, 'demo@household.local'));
+      }
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    };
+
     const initAuth = async () => {
-      setIsLoading(true);
       const { isConfigured } = getSupabaseConfig();
-      setIsSupabaseConnected(isConfigured);
+      if (isMounted) setIsSupabaseConnected(isConfigured);
 
       const supabase = getSupabase();
       if (isConfigured && supabase) {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
+          // Timeout race ensures the app NEVER hangs on a blank loading screen
+          const sessionPromise = supabase.auth.getSession();
+          const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) =>
+            setTimeout(() => resolve({ data: { session: null }, error: null }), 2000)
+          );
+
+          const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+          if (!isMounted) return;
+
           if (session?.user) {
             setSupabaseUser(session.user);
             await resolveUserProfile(session.user);
@@ -58,10 +77,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             checkLocalSession();
           }
 
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!isMounted) return;
             if (session?.user) {
               setSupabaseUser(session.user);
-              await resolveUserProfile(session.user);
+              // Run profile resolution asynchronously to avoid deadlocks
+              setTimeout(() => {
+                if (isMounted) resolveUserProfile(session.user);
+              }, 0);
             } else {
               setSupabaseUser(null);
               const demoUser = localStorage.getItem('household_demo_user');
@@ -78,23 +101,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         } catch (err) {
           console.error('Supabase auth init error:', err);
-          checkLocalSession();
+          if (isMounted) checkLocalSession();
         }
       } else {
-        checkLocalSession();
+        if (isMounted) checkLocalSession();
       }
-      setIsLoading(false);
-    };
-
-    const checkLocalSession = () => {
-      const demoUser = localStorage.getItem('household_demo_user');
-      if (demoUser && (demoUser === 'Tejas' || demoUser === 'Hetvi')) {
-        setCurrentUser(createProfileObject(demoUser as UserProfileName, 'demo@household.local'));
-      }
-      setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     };
 
     initAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const createProfileObject = (name: UserProfileName, email: string): UserProfile => {
@@ -123,25 +142,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       detectedName = 'Tejas';
     }
 
-    // 2. Query or upsert to Supabase profiles table
+    // 2. Query or upsert to Supabase profiles table with 1.5s timeout protection
     const supabase = getSupabase();
     if (supabase) {
       try {
-        const { data: profile } = await supabase
+        const fetchProfile = supabase
           .from('profiles')
           .select('name')
           .eq('id', user.id)
           .maybeSingle();
 
+        const timeout = new Promise<{ data: null }>((resolve) =>
+          setTimeout(() => resolve({ data: null }), 1500)
+        );
+
+        const { data: profile } = await Promise.race([fetchProfile, timeout]);
+
         if (profile?.name && (profile.name === 'Tejas' || profile.name === 'Hetvi')) {
           detectedName = profile.name;
         } else {
-          // If no row in profiles, automatically insert it for this authenticated user
-          await supabase.from('profiles').upsert({
+          // If no row in profiles, automatically insert it for this authenticated user (fire-and-forget)
+          Promise.resolve(supabase.from('profiles').upsert({
             id: user.id,
             email: user.email || '',
             name: detectedName
-          });
+          })).catch(() => {});
         }
       } catch (e) {
         console.warn('Could not query/upsert profiles table:', e);

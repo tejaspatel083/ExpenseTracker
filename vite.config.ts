@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // Ensures GitHub Pages deployment works under any subpath
+  base: '/ExpenseTracker/', // Standard base for GitHub Pages https://<user>.github.io/<repo>/
 })
 
