@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   ArrowRight,
   PieChart as PieIcon,
-  BarChart3,
   Edit3,
   Calendar,
   Sparkles,
@@ -183,9 +182,6 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
       color: palette[i % palette.length]
     };
   });
-
-  // Chart 2: Spent by category (Max spent for scaling)
-  const maxSpent = Math.max(...categories.map(c => c.spent), 100);
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -521,8 +517,8 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
         </div>
       </div>
 
-      {/* 3 Focused Visualizations */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Financial Visualizations */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* 1. Money Allocation Donut Chart */}
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
@@ -582,43 +578,12 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
           </div>
         </div>
 
-        {/* 2. Spending by Category Bar Chart */}
-        <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-              <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
-              <span>2. Spending by Category</span>
-            </h4>
-            <span className="text-[10px] text-slate-400 font-mono">Actual</span>
-          </div>
-
-          <div className="space-y-3 py-2">
-            {categories.map((c) => {
-              const barWidth = maxSpent > 0 ? (c.spent / maxSpent) * 100 : 0;
-              return (
-                <div key={c.category} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px]">{c.category}</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">{fmt(c.spent)}</span>
-                  </div>
-                  <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(barWidth, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 3. Monthly Savings Line / Bar Trend */}
+        {/* 2. Monthly Savings Line / Bar Trend */}
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-teal-500" />
-              <span>3. Monthly Savings</span>
+              <span>2. Monthly Savings</span>
             </h4>
             <span className="text-[10px] text-teal-600 dark:text-teal-400 font-bold">Trend</span>
           </div>
