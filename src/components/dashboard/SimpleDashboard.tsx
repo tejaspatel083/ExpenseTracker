@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ArrowRight,
   PieChart as PieIcon,
+  CreditCard,
   Edit3,
   Calendar,
   Sparkles,
@@ -170,18 +171,66 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
 
   const isThreePaycheckMonth = activePaychecks.length >= 3;
 
-  // Chart 1: Allocation Donut Data
-  const totalAlloc = categories.reduce((s, c) => s + c.planned, 0);
-  const palette = ['#10b981', '#6366f1', '#0ea5e9', '#f59e0b', '#ec4899', '#8b5cf6'];
-  const donutSlices = categories.map((c, i) => {
-    const pct = totalAlloc > 0 ? (c.planned / totalAlloc) * 100 : 0;
-    return {
-      name: c.category,
-      planned: c.planned,
-      percentage: pct,
-      color: palette[i % palette.length]
-    };
-  });
+  // Chart 1: Categorized Allocation Pillars (Savings, Expense, Investment)
+  const getCategoryNature = (c: { category: string; nature?: string }): 'expense' | 'savings' | 'investment' => {
+    if (c.nature === 'expense' || c.nature === 'savings' || c.nature === 'investment') {
+      return c.nature;
+    }
+    const name = c.category.toLowerCase();
+    if (name.includes('invest') || name.includes('tfsa')) return 'investment';
+    if (name.includes('saving')) return 'savings';
+    return 'expense';
+  };
+
+  const expenseCategories = categories.filter(c => getCategoryNature(c) === 'expense');
+  const savingsCategories = categories.filter(c => getCategoryNature(c) === 'savings');
+  const investmentCategories = categories.filter(c => getCategoryNature(c) === 'investment');
+
+  const totalExpensePlanned = expenseCategories.reduce((s, c) => s + c.planned, 0);
+  const totalSavingsPlanned = savingsCategories.reduce((s, c) => s + c.planned, 0);
+  const totalInvestmentPlanned = investmentCategories.reduce((s, c) => s + c.planned, 0);
+  const totalAlloc = totalExpensePlanned + totalSavingsPlanned + totalInvestmentPlanned;
+
+  const pillarSlices = [
+    {
+      name: 'Expenses',
+      planned: totalExpensePlanned,
+      percentage: totalAlloc > 0 ? (totalExpensePlanned / totalAlloc) * 100 : 0,
+      color: '#f43f5e',
+      bgLight: 'bg-rose-50/70 dark:bg-rose-950/20',
+      border: 'border-rose-200/60 dark:border-rose-900/40',
+      text: 'text-rose-700 dark:text-rose-300',
+      dot: 'bg-rose-500',
+      icon: CreditCard,
+      items: expenseCategories
+    },
+    {
+      name: 'Savings',
+      planned: totalSavingsPlanned,
+      percentage: totalAlloc > 0 ? (totalSavingsPlanned / totalAlloc) * 100 : 0,
+      color: '#0d9488',
+      bgLight: 'bg-teal-50/70 dark:bg-teal-950/20',
+      border: 'border-teal-200/60 dark:border-teal-900/40',
+      text: 'text-teal-700 dark:text-teal-300',
+      dot: 'bg-teal-500',
+      icon: PiggyBank,
+      items: savingsCategories
+    },
+    {
+      name: 'Investment',
+      planned: totalInvestmentPlanned,
+      percentage: totalAlloc > 0 ? (totalInvestmentPlanned / totalAlloc) * 100 : 0,
+      color: '#6366f1',
+      bgLight: 'bg-indigo-50/70 dark:bg-indigo-950/20',
+      border: 'border-indigo-200/60 dark:border-indigo-900/40',
+      text: 'text-indigo-700 dark:text-indigo-300',
+      dot: 'bg-indigo-500',
+      icon: TrendingUp,
+      items: investmentCategories
+    }
+  ];
+
+  const donutSlices = pillarSlices.filter(p => p.planned > 0 || totalAlloc === 0);
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -562,19 +611,52 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
             </div>
           </div>
 
-          {/* Slices legend */}
-          <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
-            {donutSlices.map(s => (
-              <div key={s.name} className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="text-slate-600 dark:text-slate-300 truncate max-w-[120px]">{s.name}</span>
+          {/* Categorized Pillars Breakdown: Savings, Expense, Investment */}
+          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+            {pillarSlices.map(pillar => {
+              const PillarIcon = pillar.icon;
+              return (
+                <div
+                  key={pillar.name}
+                  className={`rounded-2xl p-3 border ${pillar.bgLight} ${pillar.border} space-y-2`}
+                >
+                  {/* Pillar Group Header */}
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${pillar.dot}`} />
+                      <PillarIcon className={`w-3.5 h-3.5 ${pillar.text}`} />
+                      <span className={`font-extrabold ${pillar.text}`}>{pillar.name}</span>
+                    </div>
+                    <div className="font-mono text-slate-800 dark:text-slate-100">
+                      {fmt(pillar.planned)}{' '}
+                      <span className="text-[10px] text-slate-400 font-normal">
+                        ({Math.round(pillar.percentage)}%)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Individual Categories within this Pillar */}
+                  <div className="space-y-1.5 pl-3 border-l-2 border-slate-200 dark:border-slate-700/60 pt-0.5">
+                    {pillar.items.map(c => {
+                      const pctOfPillar = pillar.planned > 0 ? (c.planned / pillar.planned) * 100 : 0;
+                      return (
+                        <div key={c.category} className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[140px]">
+                            {c.category}
+                          </span>
+                          <span className="font-mono text-slate-700 dark:text-slate-300">
+                            {fmt(c.planned)}{' '}
+                            <span className="text-[10px] text-slate-400">
+                              ({Math.round(pctOfPillar)}%)
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                  {fmt(s.planned)} <span className="text-[10px] text-slate-400 font-normal">({Math.round(s.percentage)}%)</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
