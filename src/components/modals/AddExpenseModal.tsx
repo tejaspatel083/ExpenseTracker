@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { useAuth } from '../../context/AuthContext';
-import { SimpleTransaction, UserProfileName } from '../../types';
+import { SimpleTransaction, UserProfileName, STANDARD_CATEGORIES } from '../../types';
 import { X, DollarSign, Calendar, Tag, User } from 'lucide-react';
 
 interface AddExpenseModalProps {
@@ -15,22 +15,18 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   onClose,
   transactionToEdit
 }) => {
-  const { addTransaction, updateTransaction, selectedMonth, selectedScope, getCategoryStatuses } = useFinance();
+  const { addTransaction, updateTransaction } = useFinance();
   const { currentUser } = useAuth();
 
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Personal');
+  const [category, setCategory] = useState<string>('Personal expenses');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const user: UserProfileName = 'Tejas';
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Available categories
-  const categoryStatuses = getCategoryStatuses(selectedMonth, 'Tejas');
-  const categoriesList = Array.from(new Set([
-    ...categoryStatuses.map(c => c.category),
-    'Personal', 'Bills', 'Food', 'Shopping', 'Entertainment', 'Transportation', 'Investment', 'Savings', 'Other'
-  ]));
+  // Strictly the requested 7 categories
+  const categoriesList = STANDARD_CATEGORIES;
 
   useEffect(() => {
     if (transactionToEdit) {
@@ -41,7 +37,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     } else {
       setAmount('');
       setDescription('');
-      setCategory('Personal');
+      setCategory('Personal expenses');
       setDate(new Date().toISOString().split('T')[0]);
     }
   }, [transactionToEdit, isOpen]);

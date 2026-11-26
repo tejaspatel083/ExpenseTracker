@@ -248,7 +248,7 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
               Category Limits & Remaining Budgets
             </h3>
             <p className="text-[11px] text-slate-400">
-              Personal limit ($325), Bills, Investments & Savings
+              Personal expenses ($325 limit), Fix bills, Rent, TFSA & Savings
             </p>
           </div>
           <button
@@ -261,7 +261,7 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {categories.map((cat) => {
-            const isPersonal = cat.category.toLowerCase() === 'personal';
+            const isPersonal = cat.category.toLowerCase().includes('personal');
             return (
               <div
                 key={cat.category}

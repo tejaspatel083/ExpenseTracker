@@ -46,7 +46,9 @@ export const SheetMatrixView: React.FC = () => {
         !d.includes('hydro') &&
         !d.includes('rent') &&
         c !== 'investment' &&
-        c !== 'savings'
+        c !== 'savings' &&
+        c !== 'tfsa' &&
+        !c.includes('saving')
       );
     });
 

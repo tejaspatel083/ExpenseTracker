@@ -61,10 +61,13 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
     }
     // Default allocations (Tejas)
     return [
-      { category: 'Personal', plannedAmount: '325', nature: 'expense' },
-      { category: 'Investment', plannedAmount: '1000', nature: 'investment' },
-      { category: 'Savings', plannedAmount: '1500', nature: 'savings' },
-      { category: 'Bills', plannedAmount: '1175', nature: 'expense' }
+      { category: 'Rent', plannedAmount: '1400', nature: 'expense' },
+      { category: 'Fix bills', plannedAmount: '150', nature: 'expense' },
+      { category: 'Personal expenses', plannedAmount: '325', nature: 'expense' },
+      { category: 'Sent Honey', plannedAmount: '0', nature: 'expense' },
+      { category: 'TFSA', plannedAmount: '650', nature: 'investment' },
+      { category: 'Personal savings', plannedAmount: '200', nature: 'savings' },
+      { category: 'Miscellaneous', plannedAmount: '0', nature: 'expense' }
     ];
   });
 

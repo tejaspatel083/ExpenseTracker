@@ -86,10 +86,24 @@ export interface CategoryStatus {
   nature: CategoryNature;
 }
 
+export const STANDARD_CATEGORIES = [
+  'Fix bills',
+  'Sent Honey',
+  'TFSA',
+  'Rent',
+  'Personal savings',
+  'Personal expenses',
+  'Miscellaneous'
+] as const;
+
+export type StandardCategory = typeof STANDARD_CATEGORIES[number];
+
 export const DEFAULT_CATEGORIES: { name: string; nature: CategoryNature; defaultPlanned: Record<UserProfileName, number> }[] = [
-  { name: 'Bills', nature: 'expense', defaultPlanned: { Tejas: 1175 } },
-  { name: 'Personal', nature: 'expense', defaultPlanned: { Tejas: 325 } },
-  { name: 'Food', nature: 'expense', defaultPlanned: { Tejas: 500 } },
-  { name: 'Investment', nature: 'investment', defaultPlanned: { Tejas: 1000 } },
-  { name: 'Savings', nature: 'savings', defaultPlanned: { Tejas: 1000 } }
+  { name: 'Rent', nature: 'expense', defaultPlanned: { Tejas: 1400 } },
+  { name: 'Fix bills', nature: 'expense', defaultPlanned: { Tejas: 150 } },
+  { name: 'Personal expenses', nature: 'expense', defaultPlanned: { Tejas: 325 } },
+  { name: 'Sent Honey', nature: 'expense', defaultPlanned: { Tejas: 0 } },
+  { name: 'TFSA', nature: 'investment', defaultPlanned: { Tejas: 650 } },
+  { name: 'Personal savings', nature: 'savings', defaultPlanned: { Tejas: 200 } },
+  { name: 'Miscellaneous', nature: 'expense', defaultPlanned: { Tejas: 0 } }
 ];

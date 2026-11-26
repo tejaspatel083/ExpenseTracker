@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { SimpleTransaction } from '../../types';
+import { SimpleTransaction, STANDARD_CATEGORIES } from '../../types';
 import {
   Search,
   Filter,
@@ -31,7 +31,7 @@ export const SimpleTransactions: React.FC<SimpleTransactionsProps> = ({
   const [editingTx, setEditingTx] = useState<SimpleTransaction | null>(null);
 
   const categoryStatuses = getCategoryStatuses(selectedMonth, 'Tejas');
-  const availableCategories = Array.from(new Set(transactions.map(t => t.category))).sort();
+  const availableCategories = Array.from(new Set([...STANDARD_CATEGORIES, ...transactions.map(t => t.category)])).sort();
 
   const filtered = useMemo(() => {
     return transactions.filter(t => {

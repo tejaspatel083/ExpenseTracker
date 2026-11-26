@@ -310,7 +310,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const amt = Number(t.amount) || 0;
       const catLower = t.category.toLowerCase();
       const nature = categoryNatureMap[catLower] ||
-        (catLower === 'investment' ? 'investment' : catLower === 'savings' ? 'savings' : 'expense');
+        (catLower === 'investment' || catLower === 'tfsa' ? 'investment' : catLower.includes('saving') ? 'savings' : 'expense');
 
       if (nature === 'expense') {
         actualExpenses += amt;
@@ -354,7 +354,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     monthTx.forEach(t => {
       if (!categoryMap[t.category]) {
         const catLower = t.category.toLowerCase();
-        const nature = catLower === 'investment' ? 'investment' : catLower === 'savings' ? 'savings' : 'expense';
+        const nature = catLower === 'investment' || catLower === 'tfsa' ? 'investment' : catLower.includes('saving') ? 'savings' : 'expense';
         categoryMap[t.category] = { planned: 0, spent: 0, nature };
       }
       categoryMap[t.category].spent += Number(t.amount) || 0;
