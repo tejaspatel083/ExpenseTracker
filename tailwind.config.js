@@ -25,11 +25,6 @@ export default {
           light: '#e0f2fe',
           DEFAULT: '#0284c7',
           dark: '#0369a1',
-        },
-        hetvi: {
-          light: '#fdf2f8',
-          DEFAULT: '#db2777',
-          dark: '#be185d',
         }
       },
     },

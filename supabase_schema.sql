@@ -1,11 +1,11 @@
 -- ==============================================================================
--- Simple Personal & Household Expense Tracker Schema (Tejas & Hetvi)
+-- Personal Expense Tracker Schema (Tejas)
 -- Run this in your Supabase Dashboard: SQL Editor -> New Query -> Run
 -- ==============================================================================
 
 create extension if not exists "uuid-ossp";
 
--- 1. Profiles (Strictly Tejas and Hetvi)
+-- 1. Profiles (Strictly Tejas)
 create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   email text unique not null,
@@ -65,7 +65,7 @@ alter table public.allocations enable row level security;
 alter table public.simple_transactions enable row level security;
 alter table public.paychecks enable row level security;
 
--- Policies: Authenticated Tejas & Hetvi can access household financial records
+-- Policies: Authenticated Tejas can access personal financial records
 drop policy if exists "Allow authenticated read profiles" on public.profiles;
 create policy "Allow authenticated read profiles" on public.profiles
   for select to authenticated using (true);
@@ -102,10 +102,7 @@ begin
   values (
     new.id,
     new.email,
-    case
-      when lower(new.email) like '%hetvi%' or lower(new.email) like '%honey%' then 'Hetvi'
-      else 'Tejas'
-    end
+    'Tejas'
   )
   on conflict (id) do update set
     email = excluded.email,

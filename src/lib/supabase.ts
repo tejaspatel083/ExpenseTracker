@@ -3,7 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const STORAGE_KEY_URL = 'household_supabase_url';
 const STORAGE_KEY_KEY = 'household_supabase_anon_key';
 
-// Pre-configured default Supabase cloud database for Tejas & Hetvi household
+// Pre-configured default Supabase cloud database for Tejas Personal Expense Tracker
 const DEFAULT_SUPABASE_URL = 'https://wtxicjsmzzhputdxsere.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0eGljanNtenpocHV0ZHhzZXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2NjE0NTcsImV4cCI6MjEwOTIzNzQ1N30.vXF66IodkXm47czzas_pJdwBf9W-6iigztrJlIQimCc';
 

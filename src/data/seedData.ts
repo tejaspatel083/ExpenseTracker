@@ -6,12 +6,6 @@ export const DEFAULT_INCOME_SETTINGS: Record<UserProfileName, UserIncomeSettings
     payFrequency: 'biweekly-thursday',
     anchorThursday: '2026-11-05',
     defaultPaycheckAmount: 2075.57
-  },
-  Hetvi: {
-    user: 'Hetvi',
-    payFrequency: 'biweekly-thursday',
-    anchorThursday: '2026-11-12',
-    defaultPaycheckAmount: 2126.81
   }
 };
 
@@ -19,45 +13,34 @@ export const SEED_PAYCHECKS: PaycheckEntry[] = [
   // November 2026
   { id: 'pay-t-2026-11-1', month: '2026-11', user: 'Tejas', date: '2026-11-05', label: 'Paycheck 1 (Thu, Nov 5)', amount: 2075.57 },
   { id: 'pay-t-2026-11-2', month: '2026-11', user: 'Tejas', date: '2026-11-19', label: 'Paycheck 2 (Thu, Nov 19)', amount: 2075.57 },
-  { id: 'pay-h-2026-11-1', month: '2026-11', user: 'Hetvi', date: '2026-11-12', label: 'Paycheck 1 (Thu, Nov 12)', amount: 2126.81 },
-  { id: 'pay-h-2026-11-2', month: '2026-11', user: 'Hetvi', date: '2026-11-26', label: 'Paycheck 2 (Thu, Nov 26)', amount: 2126.81 },
 
   // October 2026
   { id: 'pay-t-2026-10-1', month: '2026-10', user: 'Tejas', date: '2026-10-08', label: 'Paycheck 1 (Thu, Oct 8)', amount: 2075.57 },
   { id: 'pay-t-2026-10-2', month: '2026-10', user: 'Tejas', date: '2026-10-22', label: 'Paycheck 2 (Thu, Oct 22)', amount: 2075.57 },
-  { id: 'pay-h-2026-10-1', month: '2026-10', user: 'Hetvi', date: '2026-10-15', label: 'Paycheck 1 (Thu, Oct 15)', amount: 2126.81 },
-  { id: 'pay-h-2026-10-2', month: '2026-10', user: 'Hetvi', date: '2026-10-29', label: 'Paycheck 2 (Thu, Oct 29)', amount: 2126.81 },
 
   // September 2026
   { id: 'pay-t-2026-09-1', month: '2026-09', user: 'Tejas', date: '2026-09-10', label: 'Paycheck 1 (Thu, Sep 10)', amount: 2075.57 },
-  { id: 'pay-t-2026-09-2', month: '2026-09', user: 'Tejas', date: '2026-09-24', label: 'Paycheck 2 (Thu, Sep 24)', amount: 2075.57 },
-  { id: 'pay-h-2026-09-1', month: '2026-09', user: 'Hetvi', date: '2026-09-17', label: 'Paycheck 1 (Thu, Sep 17)', amount: 2075.00 }
+  { id: 'pay-t-2026-09-2', month: '2026-09', user: 'Tejas', date: '2026-09-24', label: 'Paycheck 2 (Thu, Sep 24)', amount: 2075.57 }
 ];
 
 export const SEED_INCOMES: MonthlyUserIncome[] = [
   // November 2026 (calculated as 2 paychecks of $2,075.57 = $4,151.14 for Tejas)
   { month: '2026-11', user: 'Tejas', income: 4151.14 },
-  { month: '2026-11', user: 'Hetvi', income: 4253.62 },
 
   // October 2026
   { month: '2026-10', user: 'Tejas', income: 4151.14 },
-  { month: '2026-10', user: 'Hetvi', income: 4253.62 },
 
   // September 2026
   { month: '2026-09', user: 'Tejas', income: 4151.14 },
-  { month: '2026-09', user: 'Hetvi', income: 2075.00 },
 
   // August 2026
   { month: '2026-08', user: 'Tejas', income: 2075.57 },
-  { month: '2026-08', user: 'Hetvi', income: 2001.24 },
 
   // July 2026 (3 paychecks in July!)
   { month: '2026-07', user: 'Tejas', income: 6226.71 },
-  { month: '2026-07', user: 'Hetvi', income: 2301.24 },
 
   // June 2026
-  { month: '2026-06', user: 'Tejas', income: 2075.00 },
-  { month: '2026-06', user: 'Hetvi', income: 2040.00 }
+  { month: '2026-06', user: 'Tejas', income: 2075.00 }
 ];
 
 export const SEED_ALLOCATIONS: CategoryAllocation[] = [
@@ -67,31 +50,17 @@ export const SEED_ALLOCATIONS: CategoryAllocation[] = [
   { id: 'alloc-t-nov-sav', month: '2026-11', user: 'Tejas', category: 'Savings', plannedAmount: 1500, nature: 'savings' },
   { id: 'alloc-t-nov-bills', month: '2026-11', user: 'Tejas', category: 'Bills', plannedAmount: 1175, nature: 'expense' },
 
-  // November 2026 (Hetvi)
-  { id: 'alloc-h-nov-pers', month: '2026-11', user: 'Hetvi', category: 'Personal', plannedAmount: 300, nature: 'expense' },
-  { id: 'alloc-h-nov-inv', month: '2026-11', user: 'Hetvi', category: 'Investment', plannedAmount: 600, nature: 'investment' },
-  { id: 'alloc-h-nov-sav', month: '2026-11', user: 'Hetvi', category: 'Savings', plannedAmount: 1100, nature: 'savings' },
-  { id: 'alloc-h-nov-bills', month: '2026-11', user: 'Hetvi', category: 'Bills', plannedAmount: 1000, nature: 'expense' },
-
-  // October 2026 (From Google Sheet: Personal $325, TFSA $550, Hetvi savings $1000, Personal Savings $200)
+  // October 2026 (Personal $325, TFSA $550, Personal Savings $200, Bills $1000)
   { id: 'alloc-t-oct-pers', month: '2026-10', user: 'Tejas', category: 'Personal', plannedAmount: 325, nature: 'expense' },
   { id: 'alloc-t-oct-inv', month: '2026-10', user: 'Tejas', category: 'Investment', plannedAmount: 550, nature: 'investment' },
   { id: 'alloc-t-oct-sav', month: '2026-10', user: 'Tejas', category: 'Savings', plannedAmount: 200, nature: 'savings' },
   { id: 'alloc-t-oct-bills', month: '2026-10', user: 'Tejas', category: 'Bills', plannedAmount: 1000, nature: 'expense' },
 
-  { id: 'alloc-h-oct-pers', month: '2026-10', user: 'Hetvi', category: 'Personal', plannedAmount: 300, nature: 'expense' },
-  { id: 'alloc-h-oct-sav', month: '2026-10', user: 'Hetvi', category: 'Savings', plannedAmount: 1000, nature: 'savings' },
-  { id: 'alloc-h-oct-bills', month: '2026-10', user: 'Hetvi', category: 'Bills', plannedAmount: 826.81, nature: 'expense' },
-
-  // September 2026 (Personal $325, TFSA $650, Hetvi savings $1400, Personal Savings $200)
+  // September 2026 (Personal $325, TFSA $650, Personal Savings $200, Bills $900.57)
   { id: 'alloc-t-sep-pers', month: '2026-09', user: 'Tejas', category: 'Personal', plannedAmount: 325, nature: 'expense' },
   { id: 'alloc-t-sep-inv', month: '2026-09', user: 'Tejas', category: 'Investment', plannedAmount: 650, nature: 'investment' },
   { id: 'alloc-t-sep-sav', month: '2026-09', user: 'Tejas', category: 'Savings', plannedAmount: 200, nature: 'savings' },
-  { id: 'alloc-t-sep-bills', month: '2026-09', user: 'Tejas', category: 'Bills', plannedAmount: 900.57, nature: 'expense' },
-
-  { id: 'alloc-h-sep-pers', month: '2026-09', user: 'Hetvi', category: 'Personal', plannedAmount: 300, nature: 'expense' },
-  { id: 'alloc-h-sep-sav', month: '2026-09', user: 'Hetvi', category: 'Savings', plannedAmount: 1400, nature: 'savings' },
-  { id: 'alloc-h-sep-bills', month: '2026-09', user: 'Hetvi', category: 'Bills', plannedAmount: 375, nature: 'expense' }
+  { id: 'alloc-t-sep-bills', month: '2026-09', user: 'Tejas', category: 'Bills', plannedAmount: 900.57, nature: 'expense' }
 ];
 
 export const SEED_TRANSACTIONS: SimpleTransaction[] = [
@@ -105,12 +74,8 @@ export const SEED_TRANSACTIONS: SimpleTransaction[] = [
   { id: 't-nov-7', date: '2026-11-01', description: 'Hydro Electricity', category: 'Bills', amount: 51.00, user: 'Tejas' },
   { id: 't-nov-8', date: '2026-11-01', description: 'Rent', category: 'Bills', amount: 1400, user: 'Tejas' },
   { id: 't-nov-9', date: '2026-11-10', description: 'TFSA Index Fund Deposit', category: 'Investment', amount: 1000, user: 'Tejas' },
-  
-  { id: 'h-nov-1', date: '2026-11-02', description: 'Tims Iced Capp', category: 'Personal', amount: 6.50, user: 'Hetvi' },
-  { id: 'h-nov-2', date: '2026-11-04', description: 'Zara Scarf', category: 'Personal', amount: 45.00, user: 'Hetvi' },
-  { id: 'h-nov-3', date: '2026-11-05', description: 'Hetvi Monthly Savings Transfer', category: 'Savings', amount: 1100, user: 'Hetvi' },
 
-  // ================= OCTOBER 2026 (From Google Sheet Screenshot) =================
+  // ================= OCTOBER 2026 =================
   { id: 't-oct-rogers', date: '2026-10-01', description: 'Rogers', category: 'Bills', amount: 23.22, user: 'Tejas' },
   { id: 't-oct-bell', date: '2026-10-01', description: 'Bell', category: 'Bills', amount: 53.11, user: 'Tejas' },
   { id: 't-oct-hydro', date: '2026-10-01', description: 'Hydro', category: 'Bills', amount: 51.00, user: 'Tejas' },
@@ -126,9 +91,8 @@ export const SEED_TRANSACTIONS: SimpleTransaction[] = [
   { id: 't-oct-rent', date: '2026-10-01', description: 'Rent', category: 'Bills', amount: 1400.00, user: 'Tejas' },
   { id: 't-oct-tfsa', date: '2026-10-05', description: 'TFSA', category: 'Investment', amount: 550.00, user: 'Tejas' },
   { id: 't-oct-pers-sav', date: '2026-10-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' },
-  { id: 'h-oct-sav', date: '2026-10-05', description: "Hetvi's Savings", category: 'Savings', amount: 1000.00, user: 'Hetvi' },
 
-  // ================= SEPTEMBER 2026 (From Google Sheet Screenshot) =================
+  // ================= SEPTEMBER 2026 =================
   { id: 't-sep-rogers', date: '2026-09-01', description: 'Rogers', category: 'Bills', amount: 23.22, user: 'Tejas' },
   { id: 't-sep-bell', date: '2026-09-01', description: 'Bell', category: 'Bills', amount: 53.11, user: 'Tejas' },
   { id: 't-sep-hydro', date: '2026-09-01', description: 'Hydro', category: 'Bills', amount: 51.85, user: 'Tejas' },
@@ -142,23 +106,20 @@ export const SEED_TRANSACTIONS: SimpleTransaction[] = [
   { id: 't-sep-rent', date: '2026-09-01', description: 'Rent', category: 'Bills', amount: 1400.00, user: 'Tejas' },
   { id: 't-sep-tfsa', date: '2026-09-05', description: 'TFSA', category: 'Investment', amount: 650.00, user: 'Tejas' },
   { id: 't-sep-pers-sav', date: '2026-09-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' },
-  { id: 'h-sep-sav', date: '2026-09-05', description: "Hetvi's Savings", category: 'Savings', amount: 1400.00, user: 'Hetvi' },
 
-  // ================= AUGUST 2026 (From Google Sheet Screenshot) =================
+  // ================= AUGUST 2026 =================
   { id: 't-aug-rogers', date: '2026-08-01', description: 'Rogers', category: 'Bills', amount: 28.21, user: 'Tejas' },
   { id: 't-aug-bell', date: '2026-08-01', description: 'Bell', category: 'Bills', amount: 53.11, user: 'Tejas' },
   { id: 't-aug-hydro', date: '2026-08-01', description: 'Hydro', category: 'Bills', amount: 56.21, user: 'Tejas' },
   { id: 't-aug-temu', date: '2026-08-04', description: 'temu', category: 'Personal', amount: 71.40, user: 'Tejas' },
   { id: 't-aug-amz-t', date: '2026-08-08', description: 'Amazon-Tejas', category: 'Personal', amount: 45.19, user: 'Tejas' },
-  { id: 't-aug-amz-h', date: '2026-08-12', description: 'Amazon-Honey', category: 'Personal', amount: 27.76, user: 'Tejas' },
   { id: 't-aug-cine', date: '2026-08-19', description: 'skopolis-cinepl', category: 'Personal', amount: 59.24, user: 'Tejas' },
   { id: 't-aug-rex', date: '2026-08-25', description: 'Rexall Medicine', category: 'Personal', amount: 16.97, user: 'Tejas' },
   { id: 't-aug-rent', date: '2026-08-01', description: 'Rent', category: 'Bills', amount: 1400.00, user: 'Tejas' },
   { id: 't-aug-tfsa', date: '2026-08-05', description: 'TFSA', category: 'Investment', amount: 650.00, user: 'Tejas' },
   { id: 't-aug-pers-sav', date: '2026-08-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' },
-  { id: 'h-aug-sav', date: '2026-08-05', description: "Hetvi's Savings", category: 'Savings', amount: 1400.00, user: 'Hetvi' },
 
-  // ================= JULY 2026 (From Google Sheet Screenshot) =================
+  // ================= JULY 2026 =================
   { id: 't-jul-rogers', date: '2026-07-01', description: 'Rogers', category: 'Bills', amount: 23.01, user: 'Tejas' },
   { id: 't-jul-pillow', date: '2026-07-04', description: 'pillow', category: 'Personal', amount: 24.80, user: 'Tejas' },
   { id: 't-jul-amz-t', date: '2026-07-08', description: 'Amazon-Tejas', category: 'Personal', amount: 34.00, user: 'Tejas' },
@@ -170,9 +131,8 @@ export const SEED_TRANSACTIONS: SimpleTransaction[] = [
   { id: 't-jul-tfsa', date: '2026-07-05', description: 'TFSA', category: 'Investment', amount: 650.00, user: 'Tejas' },
   { id: 't-jul-pers-sav', date: '2026-07-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' },
   { id: 't-jul-hdfc', date: '2026-07-15', description: 'HDFC India Transfer', category: 'Savings', amount: 144.24, user: 'Tejas' },
-  { id: 'h-jul-sav', date: '2026-07-05', description: "Hetvi's Savings", category: 'Savings', amount: 1100.00, user: 'Hetvi' },
 
-  // ================= JUNE 2026 (From Google Sheet Screenshot) =================
+  // ================= JUNE 2026 =================
   { id: 't-jun-rogers', date: '2026-06-01', description: 'Rogers', category: 'Bills', amount: 23.01, user: 'Tejas' },
   { id: 't-jun-bell', date: '2026-06-01', description: 'Bell', category: 'Bills', amount: 53.11, user: 'Tejas' },
   { id: 't-jun-hydro', date: '2026-06-01', description: 'Hydro', category: 'Bills', amount: 51.76, user: 'Tejas' },
@@ -184,7 +144,5 @@ export const SEED_TRANSACTIONS: SimpleTransaction[] = [
   { id: 't-jun-kanza', date: '2026-06-25', description: 'Kanza Cafe', category: 'Personal', amount: 46.72, user: 'Tejas' },
   { id: 't-jun-rent', date: '2026-06-01', description: 'Rent', category: 'Bills', amount: 1400.00, user: 'Tejas' },
   { id: 't-jun-tfsa', date: '2026-06-05', description: 'TFSA', category: 'Investment', amount: 650.00, user: 'Tejas' },
-  { id: 't-jun-pers-sav', date: '2026-06-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' },
-  { id: 't-jun-honey', date: '2026-06-18', description: 'Honey-Shopping', category: 'Personal', amount: 55.00, user: 'Tejas' },
-  { id: 'h-jun-sav', date: '2026-06-05', description: "Hetvi's Savings", category: 'Savings', amount: 1100.00, user: 'Hetvi' }
+  { id: 't-jun-pers-sav', date: '2026-06-05', description: 'Personal Savings', category: 'Savings', amount: 200.00, user: 'Tejas' }
 ];

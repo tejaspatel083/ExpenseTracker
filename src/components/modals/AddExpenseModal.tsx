@@ -22,13 +22,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Personal');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [user, setUser] = useState<UserProfileName>(
-    selectedScope === 'Hetvi' ? 'Hetvi' : 'Tejas'
-  );
+  const user: UserProfileName = 'Tejas';
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Available categories
-  const categoryStatuses = getCategoryStatuses(selectedMonth, user);
+  const categoryStatuses = getCategoryStatuses(selectedMonth, 'Tejas');
   const categoriesList = Array.from(new Set([
     ...categoryStatuses.map(c => c.category),
     'Personal', 'Bills', 'Food', 'Shopping', 'Entertainment', 'Transportation', 'Investment', 'Savings', 'Other'
@@ -40,15 +38,13 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       setDescription(transactionToEdit.description);
       setCategory(transactionToEdit.category);
       setDate(transactionToEdit.date);
-      setUser(transactionToEdit.user);
     } else {
       setAmount('');
       setDescription('');
       setCategory('Personal');
       setDate(new Date().toISOString().split('T')[0]);
-      setUser(selectedScope === 'Hetvi' ? 'Hetvi' : 'Tejas');
     }
-  }, [transactionToEdit, selectedScope, isOpen]);
+  }, [transactionToEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -147,7 +143,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             />
           </div>
 
-          {/* Category & User Row */}
+          {/* Category & Date Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -166,31 +162,16 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Spent By
+                Date
               </label>
-              <select
-                value={user}
-                onChange={(e) => setUser(e.target.value as UserProfileName)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
-              >
-                <option value="Tejas">Tejas</option>
-                <option value="Hetvi">Hetvi</option>
-              </select>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
             </div>
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Date
-            </label>
-            <input
-              type="date"
-              required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
           </div>
 
           {/* Buttons */}

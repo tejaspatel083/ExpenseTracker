@@ -33,7 +33,7 @@ const MainApplication: React.FC<{
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-200">
-      {/* Sticky Header with Tejas | Hetvi | Household selector, Month selector, Settings gear */}
+      {/* Sticky Header with Month selector, Settings gear */}
       <SimpleHeader
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenSetup={() => setIsMonthlySetupOpen(true)}
@@ -74,7 +74,7 @@ const MainApplication: React.FC<{
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>Private Household Money Ledger • Tejas & Hetvi</span>
+            <span>Private Money Ledger • Tejas</span>
           </div>
           <div className="flex items-center gap-1">
             <span>Built with harmony</span>

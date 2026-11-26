@@ -38,10 +38,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
     setMonthlyIncome
   } = useFinance();
 
-  const [activeUser, setActiveUser] = useState<UserProfileName>(() => {
-    if (selectedScope === 'Hetvi') return 'Hetvi';
-    return defaultUser;
-  });
+  const activeUser: UserProfileName = 'Tejas';
 
   const [showScheduleSettings, setShowScheduleSettings] = useState(false);
   const [anchorThursday, setAnchorThursday] = useState('');
@@ -144,34 +141,7 @@ export const EditIncomeModal: React.FC<EditIncomeModalProps> = ({
           </button>
         </div>
 
-        {/* User Pill Switcher */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Select Earner:
-          </span>
-          <div className="inline-flex p-1 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-            <button
-              onClick={() => setActiveUser('Tejas')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition ${
-                activeUser === 'Tejas'
-                  ? 'bg-sky-500 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Tejas
-            </button>
-            <button
-              onClick={() => setActiveUser('Hetvi')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition ${
-                activeUser === 'Hetvi'
-                  ? 'bg-pink-500 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              Hetvi
-            </button>
-          </div>
-        </div>
+
 
         {/* Modal Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">

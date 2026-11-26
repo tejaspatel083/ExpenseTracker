@@ -2,17 +2,12 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
 import {
-  Users,
   LogOut,
   Moon,
   Sun,
-  Calendar,
-  ChevronDown,
   Settings,
-  Sparkles,
   User
 } from 'lucide-react';
-import { UserViewScope } from '../../types';
 
 interface HeaderProps {
   onOpenSettings: () => void;
@@ -49,43 +44,22 @@ export const SimpleHeader: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
-                  Tejas & Hetvi
+                  Tejas&apos;s Expense Tracker
                 </span>
                 <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
-                  Household
+                  Personal
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Profile Switcher Dropdown (Household | Tejas | Hetvi) */}
+          {/* User Badge & Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             
-            {/* Scope Switcher Dropdown */}
-            <div className="relative">
-              <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
-                selectedScope === 'household'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                  : selectedScope === 'Tejas'
-                  ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
-                  : 'bg-pink-50 dark:bg-pink-950/40 text-pink-800 dark:text-pink-300 border-pink-200 dark:border-pink-800'
-              }`}>
-                {selectedScope === 'household' ? (
-                  <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <User className={`w-3.5 h-3.5 ${selectedScope === 'Tejas' ? 'text-sky-600' : 'text-pink-600'}`} />
-                )}
-                <select
-                  value={selectedScope}
-                  onChange={(e) => setSelectedScope(e.target.value as UserViewScope)}
-                  className="bg-transparent border-none outline-none cursor-pointer pr-3 text-xs font-bold appearance-none text-current"
-                >
-                  <option value="household" className="dark:bg-slate-900 text-slate-900 dark:text-white">Household</option>
-                  <option value="Tejas" className="dark:bg-slate-900 text-slate-900 dark:text-white">Tejas</option>
-                  <option value="Hetvi" className="dark:bg-slate-900 text-slate-900 dark:text-white">Hetvi</option>
-                </select>
-                <ChevronDown className="w-3 h-3 opacity-60 pointer-events-none -ml-3" />
-              </div>
+            {/* User Profile Badge */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+              <User className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Tejas</span>
             </div>
 
             {/* Dark mode */}

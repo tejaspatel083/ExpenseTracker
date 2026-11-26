@@ -58,24 +58,18 @@ export const SheetMatrixView: React.FC = () => {
 
     // Salary & Allocations
     const tejasIncRecord = monthlyIncomes.find(i => i.month === ym && i.user === 'Tejas');
-    const hetviIncRecord = monthlyIncomes.find(i => i.month === ym && i.user === 'Hetvi');
 
     let salary1 = tejasIncRecord ? tejasIncRecord.income : (discretionaryExpenses.length > 0 ? 2075.57 : 0);
-    let salary2 = hetviIncRecord ? hetviIncRecord.income : (discretionaryExpenses.length > 0 ? 2126.81 : 0);
 
     const rent = monthTx.find(e => e.description.toLowerCase().includes('rent'))?.amount || (discretionaryExpenses.length > 0 ? 1400 : 0);
     const tfsaTx = monthTx.find(e => e.description.toLowerCase().includes('tfsa'))?.amount;
     const tfsa = tfsaTx !== undefined ? tfsaTx : (discretionaryExpenses.length > 0 ? 650 : 0);
 
-    const hetviSavTx = monthTx.find(e => e.description.toLowerCase().includes('hetvi') && (e.category === 'Savings' || e.description.toLowerCase().includes('saving')))?.amount || 
-      monthTx.find(e => e.description.toLowerCase().includes('hetvi'))?.amount;
-    const hetviSavings = hetviSavTx !== undefined ? hetviSavTx : (discretionaryExpenses.length > 0 ? 1100 : 0);
-
     const personalSavings = discretionaryExpenses.length > 0 ? 200 : 0;
-    const totalIncome = salary1 + salary2;
+    const totalIncome = salary1;
 
     const extraLeft = totalIncome > 0
-      ? totalIncome - (rent + tfsa + hetviSavings + personalSavings + discretionaryTotal)
+      ? totalIncome - (rent + tfsa + personalSavings + discretionaryTotal)
       : 0;
 
     return {
@@ -90,10 +84,8 @@ export const SheetMatrixView: React.FC = () => {
       personalLeft: Math.round(personalLeft * 100) / 100,
       rent,
       salary1,
-      salary2,
       totalIncome,
       tfsa,
-      hetviSavings,
       personalSavings,
       extraLeft: Math.round(extraLeft * 100) / 100
     };
@@ -219,12 +211,8 @@ export const SheetMatrixView: React.FC = () => {
         {/* Financial Allocations Card (Salary, Rent, TFSA, Savings, Extra Left) */}
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-2 text-xs">
           <div className="flex justify-between font-medium">
-            <span className="text-slate-500">Salary 1 (Tejas)</span>
-            <span className="font-mono text-sky-600 dark:text-sky-400 font-bold">{fmt(activeMobileData.salary1)}</span>
-          </div>
-          <div className="flex justify-between font-medium">
-            <span className="text-slate-500">Salary 2 (Hetvi)</span>
-            <span className="font-mono text-pink-600 dark:text-pink-400 font-bold">{fmt(activeMobileData.salary2)}</span>
+            <span className="text-slate-500">Salary (Tejas)</span>
+            <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">{fmt(activeMobileData.salary1)}</span>
           </div>
           <div className="flex justify-between font-medium">
             <span className="text-slate-500">Rent</span>
@@ -233,10 +221,6 @@ export const SheetMatrixView: React.FC = () => {
           <div className="flex justify-between font-medium">
             <span className="text-slate-500">TFSA</span>
             <span className="font-mono text-teal-600 dark:text-teal-400">{fmt(activeMobileData.tfsa)}</span>
-          </div>
-          <div className="flex justify-between font-medium">
-            <span className="text-slate-500">Hetvi&apos;s Savings</span>
-            <span className="font-mono text-pink-600 dark:text-pink-400">{fmt(activeMobileData.hetviSavings)}</span>
           </div>
           <div className="flex justify-between font-medium">
             <span className="text-slate-500">Personal Savings</span>
@@ -373,25 +357,14 @@ export const SheetMatrixView: React.FC = () => {
                 ))}
               </tr>
 
-              {/* SALARY & SAVINGS ALLOCATION ROWS (Rows 21-27) */}
+              {/* SALARY & SAVINGS ALLOCATION ROWS */}
               <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                 <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">
-                  Salary-1 (Tejas)
+                  Salary (Tejas)
                 </td>
                 {monthlyData.map(d => (
-                  <td key={d.monthKey} className="p-2.5 text-center font-mono text-sky-600 dark:text-sky-400 font-semibold border-r border-slate-200 dark:border-slate-800">
+                  <td key={d.monthKey} className="p-2.5 text-center font-mono text-emerald-600 dark:text-emerald-400 font-semibold border-r border-slate-200 dark:border-slate-800">
                     {fmt(d.salary1)}
-                  </td>
-                ))}
-              </tr>
-
-              <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
-                <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">
-                  Salary-2 (Hetvi)
-                </td>
-                {monthlyData.map(d => (
-                  <td key={d.monthKey} className="p-2.5 text-center font-mono text-pink-600 dark:text-pink-400 font-semibold border-r border-slate-200 dark:border-slate-800">
-                    {fmt(d.salary2)}
                   </td>
                 ))}
               </tr>
@@ -420,17 +393,6 @@ export const SheetMatrixView: React.FC = () => {
 
               <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                 <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">
-                  Hetvi&apos;s Savings
-                </td>
-                {monthlyData.map(d => (
-                  <td key={d.monthKey} className="p-2.5 text-center font-mono text-pink-600 dark:text-pink-400 border-r border-slate-200 dark:border-slate-800">
-                    {d.totalIncome > 0 ? fmt(d.hetviSavings) : '-'}
-                  </td>
-                ))}
-              </tr>
-
-              <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
-                <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">
                   Personal Savings
                 </td>
                 {monthlyData.map(d => (
@@ -442,7 +404,7 @@ export const SheetMatrixView: React.FC = () => {
 
               <tr className="bg-emerald-100/60 dark:bg-emerald-950/50 font-bold border-t-2 border-emerald-400 dark:border-emerald-600">
                 <td className="p-3 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-emerald-100 dark:bg-emerald-950 z-10">
-                  Hetvi Left / Extra Surplus
+                  Surplus / Savings Remaining
                 </td>
                 {monthlyData.map(d => (
                   <td

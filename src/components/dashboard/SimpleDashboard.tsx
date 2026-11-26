@@ -52,16 +52,8 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
   const fmt = (v: number) =>
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(v);
 
-  // Paychecks for this month
-  const tejasPaychecks = getPaychecksForMonth(selectedMonth, 'Tejas');
-  const hetviPaychecks = getPaychecksForMonth(selectedMonth, 'Hetvi');
-
-  const activePaychecks =
-    selectedScope === 'household'
-      ? [...tejasPaychecks, ...hetviPaychecks].sort((a, b) => a.date.localeCompare(b.date))
-      : selectedScope === 'Tejas'
-      ? tejasPaychecks
-      : hetviPaychecks;
+  // Paychecks for this month (Tejas)
+  const activePaychecks = getPaychecksForMonth(selectedMonth, 'Tejas');
 
   const isThreePaycheckMonth = activePaychecks.length >= 3;
 
@@ -89,7 +81,7 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] sm:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-              {selectedScope === 'household' ? 'Household Finances' : `${selectedScope}'s Dashboard`}
+              Tejas&apos;s Finances
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
@@ -232,13 +224,7 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
                   <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                     ${p.amount.toFixed(2)}
                   </span>
-                  {selectedScope === 'household' && (
-                    <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
-                      p.user === 'Tejas' ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' : 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300'
-                    }`}>
-                      {p.user}
-                    </span>
-                  )}
+
                 </span>
               ))}
             </div>

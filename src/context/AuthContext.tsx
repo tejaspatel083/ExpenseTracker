@@ -7,17 +7,10 @@ import { User } from '@supabase/supabase-js';
 export const ALLOWED_USERS: Record<UserProfileName, { name: UserProfileName; emailHint: string; avatarColor: string; avatarBg: string; role: string }> = {
   Tejas: {
     name: 'Tejas',
-    emailHint: 'tejas@household.local (or your registered Supabase email)',
-    avatarColor: 'text-sky-700 dark:text-sky-300',
-    avatarBg: 'bg-sky-100 dark:bg-sky-950/70 border-sky-300 dark:border-sky-800',
-    role: 'Co-Head of Household'
-  },
-  Hetvi: {
-    name: 'Hetvi',
-    emailHint: 'hetvi@household.local (or your registered Supabase email)',
-    avatarColor: 'text-pink-700 dark:text-pink-300',
-    avatarBg: 'bg-pink-100 dark:bg-pink-950/70 border-pink-300 dark:border-pink-800',
-    role: 'Co-Head of Household'
+    emailHint: 'tejas@personal.local (or your registered Supabase email)',
+    avatarColor: 'text-emerald-700 dark:text-emerald-300',
+    avatarBg: 'bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-800',
+    role: 'Owner'
   }
 };
 
@@ -57,12 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
     try {
       const demoUser = localStorage.getItem('household_demo_user');
-      if (demoUser === 'Tejas' || demoUser === 'Hetvi') {
-        const meta = ALLOWED_USERS[demoUser as UserProfileName];
+      if (demoUser === 'Tejas') {
+        const meta = ALLOWED_USERS.Tejas;
         return {
-          id: demoUser.toLowerCase(),
-          name: demoUser as UserProfileName,
-          email: `${demoUser.toLowerCase()}@household.local`,
+          id: 'tejas',
+          name: 'Tejas',
+          email: 'tejas@personal.local',
           avatarBg: meta.avatarBg,
           avatarColor: meta.avatarColor,
           role: meta.role
@@ -108,8 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
               setSupabaseUser(null);
               const demoUser = localStorage.getItem('household_demo_user');
-              if (demoUser && (demoUser === 'Tejas' || demoUser === 'Hetvi')) {
-                setCurrentUser(createProfileObject(demoUser as UserProfileName, 'demo@household.local'));
+              if (demoUser === 'Tejas') {
+                setCurrentUser(createProfileObject('Tejas', 'tejas@personal.local'));
               } else {
                 setCurrentUser(null);
               }
@@ -132,11 +125,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const createProfileObject = (name: UserProfileName, email: string): UserProfile => {
-    const meta = ALLOWED_USERS[name];
+  const createProfileObject = (_name: UserProfileName = 'Tejas', email: string): UserProfile => {
+    const meta = ALLOWED_USERS.Tejas;
     return {
-      id: name.toLowerCase(),
-      name,
+      id: 'tejas',
+      name: 'Tejas',
       email,
       avatarBg: meta.avatarBg,
       avatarColor: meta.avatarColor,
@@ -145,20 +138,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resolveUserProfile = async (user: User) => {
-    const emailLower = (user.email || '').toLowerCase();
-    let detectedName: UserProfileName = 'Tejas';
+    const detectedName: UserProfileName = 'Tejas';
 
-    // 1. Check metadata
-    const metaName = user.user_metadata?.name;
-    if (metaName === 'Tejas' || metaName === 'Hetvi') {
-      detectedName = metaName;
-    } else if (emailLower.includes('hetvi') || emailLower.includes('honey')) {
-      detectedName = 'Hetvi';
-    } else {
-      detectedName = 'Tejas';
-    }
-
-    // 2. Query or upsert to Supabase profiles table with 1.5s timeout protection
+    // Query or upsert to Supabase profiles table with 1.5s timeout protection
     const supabase = getSupabase();
     if (supabase) {
       try {
@@ -174,9 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const { data: profile } = await Promise.race([fetchProfile, timeout]);
 
-        if (profile?.name && (profile.name === 'Tejas' || profile.name === 'Hetvi')) {
-          detectedName = profile.name;
-        } else {
+        if (!profile?.name) {
           // If no row in profiles, automatically insert it for this authenticated user (fire-and-forget)
           Promise.resolve(supabase.from('profiles').upsert({
             id: user.id,
@@ -255,8 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const emailTrim = email.trim();
-      const detectedName: UserProfileName =
-        (emailTrim.toLowerCase().includes('hetvi') || emailTrim.toLowerCase().includes('honey')) ? 'Hetvi' : 'Tejas';
+      const detectedName: UserProfileName = 'Tejas';
 
       const authPromise = supabase.auth.signUp({
         email: emailTrim,
@@ -267,7 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Sign up timed out. Please enter using Household Passcode (1234).')), 5000)
+        setTimeout(() => reject(new Error('Sign up timed out. Please check your network and try again.')), 5000)
       );
 
       const { data, error } = await Promise.race([authPromise, timeoutPromise]);
@@ -294,9 +273,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginAsDemo = (name: UserProfileName) => {
+  const loginAsDemo = (name: UserProfileName = 'Tejas') => {
     localStorage.setItem('household_demo_user', name);
-    setCurrentUser(createProfileObject(name, `${name.toLowerCase()}@household.local`));
+    setCurrentUser(createProfileObject(name, `${name.toLowerCase()}@personal.local`));
   };
 
   const logout = async () => {

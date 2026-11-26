@@ -1,5 +1,5 @@
-export type UserProfileName = 'Tejas' | 'Hetvi';
-export type UserViewScope = 'household' | 'Tejas' | 'Hetvi';
+export type UserProfileName = 'Tejas';
+export type UserViewScope = 'Tejas';
 
 export interface UserProfile {
   id?: string;
@@ -87,9 +87,9 @@ export interface CategoryStatus {
 }
 
 export const DEFAULT_CATEGORIES: { name: string; nature: CategoryNature; defaultPlanned: Record<UserProfileName, number> }[] = [
-  { name: 'Bills', nature: 'expense', defaultPlanned: { Tejas: 1175, Hetvi: 900 } },
-  { name: 'Personal', nature: 'expense', defaultPlanned: { Tejas: 325, Hetvi: 325 } },
-  { name: 'Food', nature: 'expense', defaultPlanned: { Tejas: 500, Hetvi: 400 } },
-  { name: 'Investment', nature: 'investment', defaultPlanned: { Tejas: 1000, Hetvi: 600 } },
-  { name: 'Savings', nature: 'savings', defaultPlanned: { Tejas: 1000, Hetvi: 775 } }
+  { name: 'Bills', nature: 'expense', defaultPlanned: { Tejas: 1175 } },
+  { name: 'Personal', nature: 'expense', defaultPlanned: { Tejas: 325 } },
+  { name: 'Food', nature: 'expense', defaultPlanned: { Tejas: 500 } },
+  { name: 'Investment', nature: 'investment', defaultPlanned: { Tejas: 1000 } },
+  { name: 'Savings', nature: 'savings', defaultPlanned: { Tejas: 1000 } }
 ];

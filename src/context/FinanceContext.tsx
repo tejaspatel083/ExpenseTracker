@@ -76,7 +76,7 @@ function safeJsonParse<T>(key: string, fallback: T): T {
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isSupabaseConnected } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState<string>('2026-11');
-  const [selectedScope, setSelectedScope] = useState<UserViewScope>('household');
+  const [selectedScope, setSelectedScope] = useState<UserViewScope>('Tejas');
 
   const [monthlyIncomes, setMonthlyIncomes] = useState<MonthlyUserIncome[]>(() =>
     safeJsonParse(`${LS_KEY}incomes`, SEED_INCOMES)
@@ -286,32 +286,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Calculate Month Summary Stats
-  const getStats = (month: string = selectedMonth, scope: UserViewScope = selectedScope): MonthSummaryStats => {
-    let income = 0;
-    if (scope === 'household') {
-      const tInc = monthlyIncomes.find(i => i.month === month && i.user === 'Tejas')?.income || 0;
-      const hInc = monthlyIncomes.find(i => i.month === month && i.user === 'Hetvi')?.income || 0;
-      income = tInc + hInc;
-    } else {
-      income = monthlyIncomes.find(i => i.month === month && i.user === scope)?.income || 0;
-    }
+  const getStats = (month: string = selectedMonth, _scope: UserViewScope = selectedScope): MonthSummaryStats => {
+    const income = monthlyIncomes.find(i => i.month === month && i.user === 'Tejas')?.income || 0;
 
-    const monthAllocs = allocations.filter(a => {
-      if (a.month !== month) return false;
-      if (scope === 'household') return true;
-      return a.user === scope;
-    });
+    const monthAllocs = allocations.filter(a => a.month === month && a.user === 'Tejas');
 
     const allocated = monthAllocs.reduce((sum, a) => sum + (Number(a.plannedAmount) || 0), 0);
     const plannedSavings = monthAllocs
       .filter(a => a.nature === 'savings')
       .reduce((sum, a) => sum + (Number(a.plannedAmount) || 0), 0);
 
-    const monthTx = transactions.filter(t => {
-      if (!t.date.startsWith(month)) return false;
-      if (scope === 'household') return true;
-      return t.user === scope;
-    });
+    const monthTx = transactions.filter(t => t.date.startsWith(month) && t.user === 'Tejas');
 
     const categoryNatureMap: Record<string, 'expense' | 'investment' | 'savings'> = {};
     monthAllocs.forEach(a => {
@@ -352,18 +337,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Calculate Category Statuses
-  const getCategoryStatuses = (month: string = selectedMonth, scope: UserViewScope = selectedScope): CategoryStatus[] => {
-    const monthAllocs = allocations.filter(a => {
-      if (a.month !== month) return false;
-      if (scope === 'household') return true;
-      return a.user === scope;
-    });
-
-    const monthTx = transactions.filter(t => {
-      if (!t.date.startsWith(month)) return false;
-      if (scope === 'household') return true;
-      return t.user === scope;
-    });
+  const getCategoryStatuses = (month: string = selectedMonth, _scope: UserViewScope = selectedScope): CategoryStatus[] => {
+    const monthAllocs = allocations.filter(a => a.month === month && a.user === 'Tejas');
+    const monthTx = transactions.filter(t => t.date.startsWith(month) && t.user === 'Tejas');
 
     const categoryMap: Record<string, { planned: number; spent: number; nature: 'expense' | 'investment' | 'savings' }> = {};
 

@@ -55,7 +55,7 @@ export const LoginPage: React.FC = () => {
             <Shield className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-            Household Ledger
+            Expense Tracker
             <span className="text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
               Private
             </span>

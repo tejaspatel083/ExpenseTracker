@@ -38,12 +38,11 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
     savePaychecks
   } = useFinance();
 
-  const userToEdit: UserProfileName = targetUser || (selectedScope === 'Hetvi' ? 'Hetvi' : 'Tejas');
+  const userToEdit: UserProfileName = 'Tejas';
 
   // Existing income for this user & month
   const existingIncome =
-    monthlyIncomes.find(i => i.month === selectedMonth && i.user === userToEdit)?.income ||
-    (userToEdit === 'Tejas' ? 4151.14 : 4253.62);
+    monthlyIncomes.find(i => i.month === selectedMonth && i.user === userToEdit)?.income || 4151.14;
 
   const [incomeStr, setIncomeStr] = useState(existingIncome.toString());
   const [showPaycheckBreakdown, setShowPaycheckBreakdown] = useState(false);
@@ -60,22 +59,13 @@ export const MonthlySetupModal: React.FC<MonthlySetupModalProps> = ({
         nature: a.nature
       }));
     }
-    // Default allocations
-    if (userToEdit === 'Tejas') {
-      return [
-        { category: 'Personal', plannedAmount: '325', nature: 'expense' },
-        { category: 'Investment', plannedAmount: '1000', nature: 'investment' },
-        { category: 'Savings', plannedAmount: '1500', nature: 'savings' },
-        { category: 'Bills', plannedAmount: '1175', nature: 'expense' }
-      ];
-    } else {
-      return [
-        { category: 'Personal', plannedAmount: '300', nature: 'expense' },
-        { category: 'Investment', plannedAmount: '600', nature: 'investment' },
-        { category: 'Savings', plannedAmount: '1100', nature: 'savings' },
-        { category: 'Bills', plannedAmount: '1000', nature: 'expense' }
-      ];
-    }
+    // Default allocations (Tejas)
+    return [
+      { category: 'Personal', plannedAmount: '325', nature: 'expense' },
+      { category: 'Investment', plannedAmount: '1000', nature: 'investment' },
+      { category: 'Savings', plannedAmount: '1500', nature: 'savings' },
+      { category: 'Bills', plannedAmount: '1175', nature: 'expense' }
+    ];
   });
 
   const [newCatName, setNewCatName] = useState('');
