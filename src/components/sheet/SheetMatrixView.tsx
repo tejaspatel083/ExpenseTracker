@@ -4,7 +4,7 @@ import { Table, Plus, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-
 import { AddExpenseModal } from '../modals/AddExpenseModal';
 
 export const SheetMatrixView: React.FC = () => {
-  const { transactions, monthlyIncomes, selectedMonth, setSelectedMonth } = useFinance();
+  const { transactions, monthlyIncomes, allocations, selectedMonth, setSelectedMonth } = useFinance();
   const [selectedYear] = useState('2026');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [activeMobileMonthIdx, setActiveMobileMonthIdx] = useState(10); // November 2026 default
@@ -54,9 +54,10 @@ export const SheetMatrixView: React.FC = () => {
 
     const discretionaryTotal = discretionaryExpenses.reduce((acc, t) => acc + Number(t.amount), 0);
 
-    // Personal Spending Budget is $325 (from Google Sheet)
-    const personalBudget = 325;
-    const personalLeft = discretionaryExpenses.length > 0 ? personalBudget - discretionaryTotal : personalBudget;
+    // Personal Spending Budget from allocations
+    const personalAlloc = allocations.find(a => a.month === ym && a.user === 'Tejas' && a.category.toLowerCase().includes('personal'))?.plannedAmount;
+    const personalBudget = personalAlloc !== undefined ? personalAlloc : 0;
+    const personalLeft = personalBudget > 0 ? personalBudget - discretionaryTotal : -discretionaryTotal;
 
     // Salary & Allocations
     const tejasIncRecord = monthlyIncomes.find(i => i.month === ym && i.user === 'Tejas');
@@ -114,7 +115,7 @@ export const SheetMatrixView: React.FC = () => {
             Monthly Expenses {selectedYear}
           </h2>
           <p className="text-xs text-slate-400">
-            Interactive grid replicating your Google Sheet workbook with live $325 personal limit and surplus tracking.
+            Interactive grid replicating your Google Sheet workbook with live personal spending and surplus tracking.
           </p>
         </div>
 
@@ -200,9 +201,9 @@ export const SheetMatrixView: React.FC = () => {
           )}
         </div>
 
-        {/* Personal Budget Left indicator ($325 limit) */}
+        {/* Personal Budget Left indicator */}
         <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 flex justify-between items-center text-xs font-bold">
-          <span className="text-slate-600 dark:text-slate-300">Personal Left ($325 Limit):</span>
+          <span className="text-slate-600 dark:text-slate-300">Personal Left:</span>
           <span className={`font-mono text-sm ${
             activeMobileData.personalLeft >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600'
           }`}>
@@ -340,10 +341,10 @@ export const SheetMatrixView: React.FC = () => {
                 ))}
               </tr>
 
-              {/* LEFT ROW (Exact match of Google Sheet row 18: $325 limit) */}
+              {/* LEFT ROW */}
               <tr className="bg-emerald-50/60 dark:bg-emerald-950/20 font-bold border-b-2 border-slate-300 dark:border-slate-700">
                 <td className="p-2.5 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-emerald-50 dark:bg-emerald-950/70 z-10">
-                  Left ($325 Budget)
+                  Personal Left
                 </td>
                 {monthlyData.map(d => (
                   <td 

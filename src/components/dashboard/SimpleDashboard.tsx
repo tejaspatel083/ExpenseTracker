@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import {
   TrendingUp,
@@ -13,7 +13,10 @@ import {
   Calendar,
   Sparkles,
   Clock,
-  ChevronRight
+  ChevronRight,
+  GripVertical,
+  ChevronUp,
+  RotateCcw
 } from 'lucide-react';
 import { formatPaydayLabel } from '../../utils/paycheckCalculator';
 
@@ -41,6 +44,117 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
   const stats = getStats(selectedMonth, selectedScope);
   const categories = getCategoryStatuses(selectedMonth, selectedScope);
   const history = getMonthlyHistory(selectedScope);
+
+  // Saved sequence order of categories on dashboard
+  const [categoryOrder, setCategoryOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('household_dashboard_category_order');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const touchStartIdxRef = useRef<number | null>(null);
+
+  const saveCategoryOrder = (newOrder: string[]) => {
+    setCategoryOrder(newOrder);
+    try {
+      localStorage.setItem('household_dashboard_category_order', JSON.stringify(newOrder));
+    } catch {}
+  };
+
+  const resetCategoryOrder = () => {
+    setCategoryOrder([]);
+    try {
+      localStorage.removeItem('household_dashboard_category_order');
+    } catch {}
+  };
+
+  // Sort categories by the user's custom sequence
+  const orderedCategories = useMemo(() => {
+    if (!categoryOrder || categoryOrder.length === 0) return categories;
+    const map = new Map(categories.map(c => [c.category, c]));
+    const result: typeof categories = [];
+    categoryOrder.forEach(catName => {
+      if (map.has(catName)) {
+        result.push(map.get(catName)!);
+        map.delete(catName);
+      }
+    });
+    map.forEach(c => result.push(c));
+    return result;
+  }, [categories, categoryOrder]);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIdx !== index) {
+      setDragOverIdx(index);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === dropIndex) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const newItems = [...orderedCategories];
+    const [moved] = newItems.splice(draggedIdx, 1);
+    newItems.splice(dropIndex, 0, moved);
+    saveCategoryOrder(newItems.map(c => c.category));
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const moveCategory = (fromIdx: number, direction: 'up' | 'down') => {
+    const toIdx = direction === 'up' ? fromIdx - 1 : fromIdx + 1;
+    if (toIdx < 0 || toIdx >= orderedCategories.length) return;
+    const newItems = [...orderedCategories];
+    const [moved] = newItems.splice(fromIdx, 1);
+    newItems.splice(toIdx, 0, moved);
+    saveCategoryOrder(newItems.map(c => c.category));
+  };
+
+  const handleTouchStart = (index: number) => {
+    touchStartIdxRef.current = index;
+    setDraggedIdx(index);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartIdxRef.current === null) return;
+    const touch = e.touches[0];
+    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    const cardEl = targetEl?.closest('[data-category-index]');
+    if (cardEl) {
+      const targetIdx = Number(cardEl.getAttribute('data-category-index'));
+      if (!isNaN(targetIdx) && targetIdx !== dragOverIdx) {
+        setDragOverIdx(targetIdx);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartIdxRef.current !== null && dragOverIdx !== null && touchStartIdxRef.current !== dragOverIdx) {
+      const newItems = [...orderedCategories];
+      const [moved] = newItems.splice(touchStartIdxRef.current, 1);
+      newItems.splice(dragOverIdx, 0, moved);
+      saveCategoryOrder(newItems.map(c => c.category));
+    }
+    touchStartIdxRef.current = null;
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
 
   const [year, monthNum] = selectedMonth.split('-');
   const monthNames = [
@@ -242,52 +356,125 @@ export const SimpleDashboard: React.FC<SimpleDashboardProps> = ({
 
       {/* Category Spending Limits & Over-budget Warnings */}
       <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
-              Category Limits & Remaining Budgets
-            </h3>
-            <p className="text-[11px] text-slate-400">
-              Personal expenses ($325 limit), Fix bills, Rent, TFSA & Savings
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                Category Limits & Remaining Budgets
+              </h3>
+              <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                <GripVertical className="w-3 h-3 text-emerald-500" />
+                <span>Drag to reorder</span>
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Hold and drag cards (or use arrows) to arrange your preferred sequence
             </p>
           </div>
-          <button
-            onClick={onOpenMonthlySetup}
-            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
-          >
-            Adjust Limits
-          </button>
+          
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {categoryOrder.length > 0 && (
+              <button
+                type="button"
+                onClick={resetCategoryOrder}
+                className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
+                title="Reset to default sequence"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset order</span>
+              </button>
+            )}
+            <button
+              onClick={onOpenMonthlySetup}
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+            >
+              Adjust Limits
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {categories.map((cat) => {
-            const isPersonal = cat.category.toLowerCase().includes('personal');
+        {/* Drag and Drop Category Grid */}
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {orderedCategories.map((cat, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx && draggedIdx !== idx;
+
             return (
               <div
                 key={cat.category}
-                className={`p-3.5 rounded-2xl border transition ${
-                  cat.isOverBudget
+                data-category-index={idx}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`p-3.5 rounded-2xl border transition-all duration-150 relative ${
+                  isDragging
+                    ? 'opacity-30 scale-[0.98] border-emerald-500 shadow-inner'
+                    : isDragOver
+                    ? 'border-2 border-dashed border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 scale-[1.01]'
+                    : cat.isOverBudget
                     ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900'
                     : cat.percentage >= 90
                     ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800'
-                    : isPersonal
-                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700/60'
                 }`}
               >
-                {/* Category Header */}
+                {/* Category Header with Grip Handle and Reorder Buttons */}
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-xs text-slate-900 dark:text-white">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {/* Touch / Mouse Drag Grip */}
+                    <div
+                      onTouchStart={() => handleTouchStart(idx)}
+                      className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 p-0.5 rounded touch-none shrink-0"
+                      title="Drag to reorder sequence"
+                    >
+                      <GripVertical className="w-3.5 h-3.5" />
+                    </div>
+
+                    <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">
                       {cat.category}
                     </span>
-                    {isPersonal && (
-                      <span className="text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.2 rounded-full">
-                        $325 Limit
-                      </span>
-                    )}
+
+                    {/* Move Up/Down Arrow buttons for easy 1-tap reordering */}
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-70 hover:opacity-100">
+                      {idx > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveCategory(idx, 'up');
+                          }}
+                          className="p-0.5 text-slate-400 hover:text-emerald-500 rounded"
+                          title="Move up"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                      )}
+                      {idx < orderedCategories.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveCategory(idx, 'down');
+                          }}
+                          className="p-0.5 text-slate-400 hover:text-emerald-500 rounded"
+                          title="Move down"
+                        >
+                          <ChevronRight className="w-3 h-3 rotate-90" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+
+                  <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
                     {fmt(cat.spent)} / {fmt(cat.planned)}
                   </span>
                 </div>
