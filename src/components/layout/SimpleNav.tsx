@@ -58,9 +58,9 @@ export const SimpleNav: React.FC<SimpleNavProps> = ({
         </div>
       </nav>
 
-      {/* Mobile Sticky Bottom Navigation Bar (3 Tabs + Raised Center Plus Button) */}
+      {/* Mobile Sticky Bottom Navigation Bar (Dashboard, Center Plus, Transactions) */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe shadow-2xl">
-        <div className="grid grid-cols-4 items-center justify-around h-14 px-2">
+        <div className="grid grid-cols-3 items-center justify-around h-14 px-4">
           
           {/* Tab 1: Dashboard */}
           <button
@@ -93,17 +93,6 @@ export const SimpleNav: React.FC<SimpleNavProps> = ({
           >
             <Receipt className="w-5 h-5" />
             <span className="text-[10px] mt-0.5">Transactions</span>
-          </button>
-
-          {/* Tab 3: Monthly Summary */}
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`flex flex-col items-center justify-center py-1 transition ${
-              activeTab === 'summary' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'
-            }`}
-          >
-            <BarChart2 className="w-5 h-5" />
-            <span className="text-[10px] mt-0.5">Summary</span>
           </button>
 
         </div>

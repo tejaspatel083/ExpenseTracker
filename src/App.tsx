@@ -19,6 +19,18 @@ const MainApplication: React.FC<{
 }> = ({ darkMode, toggleDarkMode }) => {
   const { isAuthenticated, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<SimpleTabKey>('dashboard');
+
+  // Prevent accessing summary page on mobile screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640 && activeTab === 'summary') {
+        setActiveTab('dashboard');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeTab]);
   
   // Modals state
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -65,7 +77,9 @@ const MainApplication: React.FC<{
         )}
 
         {activeTab === 'summary' && (
-          <SimpleMonthlySummary />
+          <div className="hidden sm:block">
+            <SimpleMonthlySummary />
+          </div>
         )}
       </main>
 
